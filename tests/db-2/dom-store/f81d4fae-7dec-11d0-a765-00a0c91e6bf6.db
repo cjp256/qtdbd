@@ -1,0 +1,24 @@
+{
+    "null": null,
+    "booltrue": true,
+    "boolfalse": false,
+    "string": "blue",
+    "number": 56,
+    "array": [1,2,3,4,5],
+    "object": {
+        "null": null,
+        "booltrue": true,
+        "boolfalse": false,
+        "string": "blue",
+        "number": 56,
+        "array": [1,2,3,4,5],
+        "object": {
+            "null": null,
+            "booltrue": true,
+            "boolfalse": false,
+            "string": "blue",
+            "number": 56,
+            "array": [1,2,3,4,5],
+        }
+    }
+}
