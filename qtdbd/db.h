@@ -2,8 +2,12 @@
 #define DB_H
 
 #include <QObject>
+#include <QDBusContext>
+#include <QDBusConnection>
+#include <QDBusMessage>
 
-class Db: public QObject
+class Db: public QObject,
+          protected QDBusContext
 {
     Q_OBJECT
 public:

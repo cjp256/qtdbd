@@ -7,6 +7,7 @@
 #include <QtCore/QStringList>
 #include <QtCore/QVariant>
 #include <QtDebug>
+#include <QtDBus/QtDBus>
 
 Db::Db()
 {
@@ -21,51 +22,50 @@ Db::~Db()
 QString Db::dump(const QString &path)
 {
     QString value("dump");
-    qDebug() << "dump";
+    qDebug() << message().service() << " dump(" << path << ")";
     return value;
 }
 
 bool Db::exists(const QString &path)
 {
     bool ex = true;
-    qDebug() << "exists";
+    qDebug() << message().service() << " exists(" << path << ")";
     return ex;
 }
 
 void Db::inject(const QString &path, const QString &value)
 {
-    qDebug() << "inject";
+    qDebug() << message().service() << " inject(" << path << ", " << value << ")";
 }
 
 QStringList Db::list(const QString &path)
 {
     QStringList value;
-    qDebug() << "list";
+    qDebug() << message().service() << " list(" << path << ")";
     return value;
 }
 
 QString Db::read(const QString &path)
 {
     QString value;
-    qDebug() << "read";
+    qDebug() << message().service() << " read(" << path << ")";
     return value;
 }
 
 QByteArray Db::read_binary(const QString &path)
 {
-    // handle method call com.citrix.xenclient.db.read_binary
     QByteArray value;
-    qDebug() << "read_binary";
+    qDebug() << message().service() << " read_binary(" << path << ")";
     return value;
 }
 
 void Db::rm(const QString &path)
 {
-    qDebug() << "rm";
+    qDebug() << message().service() << " rm(" << path << ")";
 }
 
 void Db::write(const QString &path, const QString &value)
 {
-    qDebug() << "write";
+    qDebug() << message().service() << " write(" << path << ", " << value << ")";
 }
 

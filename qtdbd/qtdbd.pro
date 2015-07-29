@@ -11,6 +11,7 @@ QT += dbus
 TARGET = qtdbd
 CONFIG   += console
 CONFIG   -= app_bundle
+CONFIG += c++11
 
 TEMPLATE = app
 
