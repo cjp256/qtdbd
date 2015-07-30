@@ -5,13 +5,14 @@
 #include <QDBusContext>
 #include <QDBusConnection>
 #include <QDBusMessage>
+#include "dbtree.h"
 
 class Db: public QObject,
           protected QDBusContext
 {
     Q_OBJECT
 public:
-    Db();
+    Db(DBTree *dbTree);
     ~Db();
 
 public: // PROPERTIES
@@ -25,6 +26,8 @@ public Q_SLOTS: // METHODS
     void rm(const QString &path);
     void write(const QString &path, const QString &value);
 Q_SIGNALS: // SIGNALS
+private:
+    DBTree *dbTree;
 };
 
 #endif // DB_H

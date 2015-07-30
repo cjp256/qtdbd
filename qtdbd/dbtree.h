@@ -10,6 +10,7 @@ class DBTree : public QObject
 public:
     DBTree(QString dbPath, int maxFlushDelayMillis);
     ~DBTree();
+    QVariant getObject(QStringList &splitPath, const QVariant &defaultValue);
 private:
     QString dbPath;
     int maxFlushDelay;

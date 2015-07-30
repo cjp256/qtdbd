@@ -129,12 +129,11 @@ int main(int argc, char *argv[])
         exit(2);
     }
 
-    Db *db = new Db();
+    dbTree = new DBTree(g_cmdLineOptions.dbBaseDirectoryPath, g_cmdLineOptions.dbMaxDelayMillis);
+    Db *db = new Db(dbTree);
     new DbInterfaceAdaptor(db);
 
     QDBusConnection::sessionBus().registerObject("/", "com.citrix.xenclient.db", db, QDBusConnection::ExportAllSlots);
-
-    dbTree = new DBTree(g_cmdLineOptions.dbBaseDirectoryPath, g_cmdLineOptions.dbMaxDelayMillis);
 
     qDebug("registered and listening on dbus...");
     app.exec();

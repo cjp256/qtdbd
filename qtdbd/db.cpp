@@ -9,9 +9,9 @@
 #include <QtDebug>
 #include <QtDBus/QtDBus>
 
-Db::Db()
+Db::Db(DBTree *dbTree) : dbTree(dbTree)
 {
-    // constructor
+
 }
 
 Db::~Db()
@@ -47,8 +47,16 @@ QStringList Db::list(const QString &path)
 
 QString Db::read(const QString &path)
 {
-    QString value;
+    QString value("");
     qDebug() << message().service() << " read(" << path << ")";
+    QStringList split = path.split("/", QString::SplitBehavior::SkipEmptyParts);
+
+    QVariant obj = dbTree->getObject(split, "");
+    qDebug() << "read() object:" << obj;
+
+    value = obj.toString();
+
+    qDebug() << "returning:" << value;
     return value;
 }
 

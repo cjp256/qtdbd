@@ -2,12 +2,15 @@
 #include <QTimer>
 #include <QMutex>
 #include <QFile>
+#include <QSaveFile>
 #include <QtDebug>
 
 SimpleJsonDB::SimpleJsonDB(QString path, QString vpath, int maxFlushDelayMillis) : path(path), vpath(vpath), maxFlushDelay(maxFlushDelayMillis), fileLock()
 {
+    filterVmAndDomstoreKeys = false;
     flushTimer = new QTimer(this);
     flushTimer->setSingleShot(true);
+    //connect(flushTimer, SIGNAL(dbChanged()), this, SLOT(writeToDisk()));
     readFromDisk();
 }
 
@@ -22,8 +25,7 @@ void SimpleJsonDB::readFromDisk()
     // read file into string
     qDebug() << "opening file: " << path;
     QString val;
-    QFile file;
-    file.setFileName(path);
+    QFile file(path);
     file.open(QIODevice::ReadOnly | QIODevice::Text);
     val = file.readAll();
     file.close();
@@ -36,6 +38,8 @@ void SimpleJsonDB::readFromDisk()
     jsonObject = jsonDocument.object();
     qDebug() << "qjsonobject read OK from file: " << path << "dump:" << QJsonDocument(jsonObject).toJson(QJsonDocument::Compact);
 
+    dbHashTable = jsonObject.toVariantHash();
+
     fileLock.unlock();
 }
 
@@ -43,23 +47,26 @@ void SimpleJsonDB::writeToDisk()
 {
     fileLock.lock();
 
+    // build new json object and strip vm/dom-store keys as required
+    jsonObject = QJsonObject::fromVariantHash(dbHashTable);
+    if (filterVmAndDomstoreKeys) {
+        jsonObject.remove("vm");
+        jsonObject.remove("dom-store");
+    }
+
     if (jsonObject.isEmpty()) {
-        QFile file;
-        file.setFileName(path);
+        // db is empty, remove old db file (if it exists)
+        QFile file(path);
         file.remove();
     } else {
-        //if (path == "/config/db") then filter 'vm' and 'dom-store'
-        //and write data to file
+        // save json file with atomic QSaveFile
         QJsonDocument doc(jsonObject);
         QString strJson(doc.toJson(QJsonDocument::Indented));
-        QFile file;
-        file.setFileName(path + ".tmp");
+        QSaveFile file(path);
         file.open(QIODevice::WriteOnly | QIODevice::Text);
         QTextStream outStream(&file);
         outStream << strJson;
-        file.flush();
-        file.rename(path);
-        file.close();
+        file.commit();
     }
 
     fileLock.unlock();
