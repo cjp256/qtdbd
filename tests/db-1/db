@@ -1,0 +1,18 @@
+{
+    "house": {
+        "address": {
+            "street": "55 liberty street",
+            "zip": 13440
+        }
+    },
+    "me": "iwuzhere",
+    "owner": {
+        "alive": true,
+        "head": {
+            "eyes": "blue",
+            "hair": "brown"
+        },
+        "height": 56,
+        "name": "john aka jack"
+    }
+}
