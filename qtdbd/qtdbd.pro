@@ -18,8 +18,12 @@ TEMPLATE = app
 
 SOURCES += main.cpp \
     db_adaptor.cpp \
-    db.cpp
+    db.cpp \
+    simplejsondb.cpp \
+    dbtree.cpp
 
 HEADERS += \
     db_adaptor.h \
-    db.h
+    db.h \
+    simplejsondb.h \
+    dbtree.h

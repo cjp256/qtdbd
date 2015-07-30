@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include "db.h"
 #include "db_adaptor.h"
+#include "dbtree.h"
 
 typedef struct
 {
@@ -14,18 +15,19 @@ typedef struct
     bool domidLookupEnabled;
     bool syslogEnabled;
     bool sessionBusEnabled;
-    double dbMaxDelayMillis;
+    int dbMaxDelayMillis;
     QString dbBaseDirectoryPath;
 } CmdLineOptions;
 
-static CmdLineOptions cmd_line_opts;
+static CmdLineOptions g_cmdLineOptions;
+static  DBTree *dbTree = nullptr;
 
 void logOutput(QtMsgType type, const QMessageLogContext&, const QString& msg)
 {
     /* TODO: honor syslog option */
     switch (type) {
     case QtDebugMsg:
-        if (cmd_line_opts.debuggingEnabled) {
+        if (g_cmdLineOptions.debuggingEnabled) {
             fprintf(stderr, "Debug: %s\n", qPrintable(msg));
         }
         break;
@@ -103,7 +105,7 @@ void parseCommandLine(QCommandLineParser &parser, QCoreApplication &app, CmdLine
     qDebug("domid lookup enabled: %d", opts->domidLookupEnabled);
     qDebug("syslog enabled: %d", opts->syslogEnabled);
     qDebug("session bus enabled: %d", opts->sessionBusEnabled);
-    qDebug("max delay millis: %f", opts->dbMaxDelayMillis);
+    qDebug("max delay millis: %d", opts->dbMaxDelayMillis);
     qDebug("db base directory path: %s", qPrintable(opts->dbBaseDirectoryPath));
 }
 
@@ -115,7 +117,7 @@ int main(int argc, char *argv[])
     QCoreApplication::setApplicationVersion("3.0");
     QCommandLineParser parser;
 
-    parseCommandLine(parser, app, &cmd_line_opts);
+    parseCommandLine(parser, app, &g_cmdLineOptions);
 
     if (!QDBusConnection::sessionBus().isConnected()) {
         qFatal("failed to connect to dbus");
@@ -131,6 +133,8 @@ int main(int argc, char *argv[])
     new DbInterfaceAdaptor(db);
 
     QDBusConnection::sessionBus().registerObject("/", "com.citrix.xenclient.db", db, QDBusConnection::ExportAllSlots);
+
+    dbTree = new DBTree(g_cmdLineOptions.dbBaseDirectoryPath, g_cmdLineOptions.dbMaxDelayMillis);
 
     qDebug("registered and listening on dbus...");
     app.exec();
