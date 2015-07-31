@@ -51,7 +51,7 @@ QString Db::read(const QString &path)
     qDebug() << message().service() << " read(" << path << ")";
     QStringList split = path.split("/", QString::SplitBehavior::SkipEmptyParts);
 
-    QVariant obj = dbTree->getObject(split, "");
+    QVariant obj = dbTree->getObject(split, QString(""));
     qDebug() << "read() object:" << obj;
 
     value = obj.toString();
@@ -75,5 +75,7 @@ void Db::rm(const QString &path)
 void Db::write(const QString &path, const QString &value)
 {
     qDebug() << message().service() << " write(" << path << ", " << value << ")";
+    QStringList split = path.split("/", QString::SplitBehavior::SkipEmptyParts);
+    dbTree->setObject(split, value);
 }
 

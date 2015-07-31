@@ -7,6 +7,7 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QHash>
+#include <QVariantMap>
 
 class SimpleJsonDB: public QObject
 {
@@ -14,19 +15,18 @@ class SimpleJsonDB: public QObject
 public:
     SimpleJsonDB(QString path, QString vpath, int maxFlushDelayMillis);
     ~SimpleJsonDB();
-    QVariantHash dbHashTable;
+    QVariantMap dbMap;
     bool filterVmAndDomstoreKeys;
 public Q_SLOTS:
     void readFromDisk();
     void writeToDisk();
+    void debugJsonObject();
 private:
     QString path;
     QString vpath;
     int maxFlushDelay;
     QMutex fileLock;
     QTimer *flushTimer;
-    QJsonDocument jsonDocument;
-    QJsonObject jsonObject;
     void dbChanged();
 Q_SIGNALS: // SIGNALS
 };

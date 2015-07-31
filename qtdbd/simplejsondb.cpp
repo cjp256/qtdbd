@@ -31,16 +31,18 @@ void SimpleJsonDB::readFromDisk()
     file.close();
     qDebug() << "closed file: " << path;
 
-    // convert to json document
-    jsonDocument = QJsonDocument::fromJson(val.toUtf8());
-    qDebug() << "json read OK from file: " << path;
-
-    jsonObject = jsonDocument.object();
+    // convert to json object
+    QJsonObject jsonObject = QJsonDocument::fromJson(val.toUtf8()).object();
     qDebug() << "qjsonobject read OK from file: " << path << "dump:" << QJsonDocument(jsonObject).toJson(QJsonDocument::Compact);
 
-    dbHashTable = jsonObject.toVariantHash();
+    dbMap = jsonObject.toVariantMap();
 
     fileLock.unlock();
+}
+
+void SimpleJsonDB::debugJsonObject()
+{
+    qDebug() << QJsonDocument(QJsonObject::fromVariantMap(dbMap)).toJson(QJsonDocument::Indented);
 }
 
 void SimpleJsonDB::writeToDisk()
@@ -48,7 +50,7 @@ void SimpleJsonDB::writeToDisk()
     fileLock.lock();
 
     // build new json object and strip vm/dom-store keys as required
-    jsonObject = QJsonObject::fromVariantHash(dbHashTable);
+    QJsonObject jsonObject = QJsonObject::fromVariantMap(dbMap);
     if (filterVmAndDomstoreKeys) {
         jsonObject.remove("vm");
         jsonObject.remove("dom-store");
