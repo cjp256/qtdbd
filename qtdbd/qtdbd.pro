@@ -22,8 +22,12 @@ SOURCES += main.cpp \
     simplejsondb.cpp \
     dbtree.cpp
 
+#    tests/testdbtree.cpp
+
 HEADERS += \
     db_adaptor.h \
     db.h \
     simplejsondb.h \
     dbtree.h
+
+#    tests/testdbtree.h

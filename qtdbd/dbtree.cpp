@@ -5,18 +5,17 @@
 #include <QVariant>
 #include <QHash>
 
-DBTree::DBTree(QString dbPath, int maxFlushDelayMillis) : dbPath(dbPath), maxFlushDelay(maxFlushDelayMillis)
+DBTree::DBTree() : dbRoot(), dbPath(""), maxFlushDelay(0), mainDb(&dbRoot, "")
+{
+    qDebug() << "DBTree init()";
+    mainDb.filterVmAndDomstoreKeys = true;
+}
+
+DBTree::DBTree(QString dbPath, int maxFlushDelayMillis) : dbRoot(), dbPath(dbPath), maxFlushDelay(maxFlushDelayMillis), mainDb(&dbRoot, QDir(dbPath).filePath("db"), "", maxFlushDelay)
 {
     qDebug() << "DBTree init(" << dbPath << "," << maxFlushDelay << ")";
-
-    mainDB = new SimpleJsonDB(QDir(dbPath).filePath("db"), "", maxFlushDelay);
-    mainDB->filterVmAndDomstoreKeys = true;
-    mainDB->debugJsonObject();
-    mainDB->dbMap.insert("me", "iwuzhere");
-    mainDB->debugJsonObject();
-    mainDB->dbMap.find("owner").value().toMap().insert("me", "iwuzhere2");
-    mainDB->debugJsonObject();
-    mainDB->writeToDisk();
+    mainDb.filterVmAndDomstoreKeys = false;
+    qDebug() <<  valueToJsonString(&dbRoot);
 }
 
 DBTree::~DBTree()
@@ -24,9 +23,23 @@ DBTree::~DBTree()
 
 }
 
-QVariant DBTree::getObject(const QStringList &splitPath, const QVariant &defaultValue)
+QString DBTree::valueToJsonString(Value *d)
 {
-    QVariant obj(mainDB->dbMap);
+    StringBuffer buffer;
+    Writer<StringBuffer> writer(buffer);
+
+    Document e;
+    e.Parse("{}");
+    e.CopyFrom(*d, e.GetAllocator());
+    e.Accept(writer);
+    return buffer.GetString();
+}
+
+Value* DBTree::getObject(const QStringList &splitPath)
+{
+    Value *obj = &dbRoot;
+
+    qDebug() << "getObject(): db = " << valueToJsonString(obj);
 
     // if it is top of tree, return the whole tree
     if (splitPath.length() == 0) {
@@ -35,33 +48,36 @@ QVariant DBTree::getObject(const QStringList &splitPath, const QVariant &default
 
     // traverse tree parts
     foreach (const QString &part, splitPath) {
-        qDebug() << "getObject: part:" << part << "obj:" << obj << "type:" << obj.type();
+        qDebug() << "getObject: part:" << part << "obj:" << obj << "type:" << obj->GetType();
 
-        // make sure next level is a map
-        if (obj.type() == QVariant::Map) {
-            qDebug() << "getObject() is variant map";
-            QVariantMap nextMap = obj.toMap();
-            obj = nextMap.value(part, QVariant());
+        // make sure next level is an object
+        if (obj->IsObject()) {
+            qDebug() << "getObject() is object";
+
+            QByteArray array = part.toLocal8Bit();
+            Value::MemberIterator itr = obj->FindMember(array.data());
+
+            // if it doesn't exist, return default value
+            if (itr == obj->MemberEnd()) {
+                return nullptr;
+            }
+
+            obj = &itr->value;
         } else {
             qDebug() << "getObject() failed to traverse path:" << obj;
-            return defaultValue;
+            return nullptr;
         }
 
         qDebug() << "getObject: next object:" << obj;
-
-        // if it doesn't exist, return default value
-        if (!obj.isValid()) {
-            return defaultValue;
-        }
     }
 
     qDebug() << "getObject: returning object:" << obj;
     return obj;
 }
 
-void DBTree::setObject(QStringList splitPath, const QVariant &value)
+void DBTree::setObject(QStringList splitPath, Value &value)
 {
-    QVariantMap obj = mainDB->dbMap;
+    Value *obj = &dbRoot;
 
     // if it is top of tree, ignore
     if (splitPath.length() == 0) {
@@ -76,14 +92,32 @@ void DBTree::setObject(QStringList splitPath, const QVariant &value)
     foreach (const QString &part, splitPath) {
         qDebug() << "setObject: part:" << part;
 
-        if (!obj.contains(part)) {
+        Value::MemberIterator itr = obj->FindMember(StringRef(part.toLocal8Bit().data()));
+
+        // if it doesn't exist, create
+        if (itr == obj->MemberEnd()) {
             qDebug() << "setObject: creating empty map for key part:" << part;
-            QVariantMap next = QVariantMap();
-            obj.insert(part, next);
+            Value v(kObjectType);
+            auto p = part.toLocal8Bit();
+            const char *pp = p.data();
+            obj->AddMember(StringRef(pp), v, dbRoot.GetAllocator());
         }
-        obj = obj.value(part, QVariantMap()).toMap();
-        qDebug() << "setObject: next object:" << obj;
+
+        // make sure next level is an object
+        auto p = key.toLocal8Bit();
+        const char *pp = p.data();
+        itr = obj->FindMember(StringRef(pp));
+        if (obj->IsObject()) {
+            qDebug() << "setObject: traversing to next level";
+            obj = &itr->value;
+        } else {
+            qFatal("setObject: failed to traverse tree");
+        }
     }
-    obj.insert(key, value.toString());
-    qDebug() << "setObject: set" << key << "to:" << value;
+
+    auto k = key.toLocal8Bit();
+    const char *kk = k.data();
+    obj->AddMember(StringRef(kk), value, dbRoot.GetAllocator());
+    qDebug() << "setObject: set" << key << "to:" << valueToJsonString(&value);
+    return;
 }

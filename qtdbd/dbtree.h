@@ -4,18 +4,27 @@
 #include <QObject>
 #include "simplejsondb.h"
 
+#include "rapidjson/document.h"
+#include "rapidjson/writer.h"
+#include "rapidjson/stringbuffer.h"
+using namespace rapidjson;
+
 class DBTree : public QObject
 {
     Q_OBJECT
 public:
+    DBTree();
     DBTree(QString dbPath, int maxFlushDelayMillis);
     ~DBTree();
-    QVariant getObject(const QStringList &splitPath, const QVariant &defaultValue);
-    void setObject(QStringList splitPath, const QVariant &value);
+    Value *getObject(const QStringList &splitPath);
+    void setObject(QStringList splitPath, Value &value);
+    QString valueToJsonString(Value *d);
+    Document dbRoot;
 private:
     QString dbPath;
     int maxFlushDelay;
-    SimpleJsonDB *mainDB;
+    SimpleJsonDB mainDb;
+
 signals:
 
 public slots:
