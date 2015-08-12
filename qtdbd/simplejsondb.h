@@ -15,24 +15,26 @@ class SimpleJsonDB: public QObject
 {
     Q_OBJECT
 public:
-    SimpleJsonDB(const QString vpath);
-    SimpleJsonDB(const QString path, const QString vpath, int maxFlushDelayMillis);
+    SimpleJsonDB(const QString vpath, const QString path=":memory:", int maxFlushDelayMillis = 3000);
     ~SimpleJsonDB();
-    bool filterVmAndDomstoreKeys;
 public Q_SLOTS:
     QString jsonString();
     QMPointer<QMJsonValue> readFromDisk();
     void writeToDisk(const QString &jsonString);
+    void setFilterVmAndDomstoreKeys(bool filter);
+    void setMaxFlushDelay(int maxFlushDelayMillis);
+    void setWorkerThread(QThread *workerThread);
+    void dbChanged();
 private:
     QMPointer<QMJsonValue> db;
-    QString path;
     QString vpath;
-    int maxFlushDelay;
+    QString path;
     QMutex fileLock;
-    QTimer *flushTimer;
+    QTimer flushTimer;
+    int maxFlushDelay;
     bool skipDisk;
-    void dbChanged();
-Q_SIGNALS: // SIGNALS
+    bool filterVmAndDomstoreKeys;
+Q_SIGNALS:
 };
 
 #endif // SIMPLEJSONDB_H

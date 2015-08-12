@@ -6,24 +6,9 @@
 #include <QtDebug>
 #include <qmjson.h>
 
-SimpleJsonDB::SimpleJsonDB(const QString vpath) : db(), vpath(vpath), fileLock()
+SimpleJsonDB::SimpleJsonDB(const QString vpath, const QString path, int maxFlushDelayMillis) : db(), vpath(vpath), path(path), fileLock(), flushTimer(0), maxFlushDelay(maxFlushDelayMillis), skipDisk(false), filterVmAndDomstoreKeys(false)
 {
-    // testing constructor, no backing file
-    filterVmAndDomstoreKeys = false;
-    skipDisk = true;
-    flushTimer = new QTimer(this);
-    flushTimer->setSingleShot(true);
-    path = QString(":memory");
-    qDebug() << db;
-}
-
-SimpleJsonDB::SimpleJsonDB(const QString path, QString vpath, int maxFlushDelayMillis) : db(), path(path), vpath(vpath), maxFlushDelay(maxFlushDelayMillis), fileLock()
-{
-    filterVmAndDomstoreKeys = false;
-    flushTimer = new QTimer(this);
-    flushTimer->setSingleShot(true);
-    //connect(flushTimer, SIGNAL(dbChanged()), this, SLOT(writeToDisk()));
-    readFromDisk();
+    flushTimer.setSingleShot(true);
     qDebug() << db;
 }
 
@@ -34,6 +19,21 @@ SimpleJsonDB::~SimpleJsonDB()
 QString SimpleJsonDB::jsonString()
 {
     return db->toJson();
+}
+
+void SimpleJsonDB::setFilterVmAndDomstoreKeys(bool filter)
+{
+    filterVmAndDomstoreKeys = filter;
+}
+
+void SimpleJsonDB::setMaxFlushDelay(int maxFlushDelayMillis)
+{
+    maxFlushDelay = maxFlushDelayMillis;
+}
+
+void SimpleJsonDB::setWorkerThread(QThread *workerThread)
+{
+    flushTimer.moveToThread(workerThread);
 }
 
 QMPointer<QMJsonValue> SimpleJsonDB::readFromDisk()
@@ -67,7 +67,7 @@ void SimpleJsonDB::writeToDisk(const QString &jsonString)
 
 void SimpleJsonDB::dbChanged()
 {
-    if (!flushTimer->isActive()) {
-        flushTimer->start(maxFlushDelay);
+    if (!flushTimer.isActive()) {
+        flushTimer.start(maxFlushDelay);
     }
 }

@@ -6,23 +6,21 @@
 #include <QHash>
 #include <qmjson.h>
 
-DBTree::DBTree() : dbRoot(), dbPath(""), maxFlushDelay(0), mainDb(QString(""))
+DBTree::DBTree(QString dbPath, int maxFlushDelayMillis) : dbRoot(), maxFlushDelay(maxFlushDelayMillis), mainDb(nullptr), dbWriterThread(this)
 {
-    qDebug() << "DBTree init()";
-    mainDb.filterVmAndDomstoreKeys = true;
-    dbRoot = mainDb.readFromDisk();
+    qDebug() << "DBTree init(" << dbPath << "," << maxFlushDelay << ")";
+
+    if (dbPath == ":memory:") {
+        mainDb = QSharedPointer<SimpleJsonDB>(new SimpleJsonDB(QString(""), QString(":memory:"), maxFlushDelayMillis));
+    } else {
+        mainDb = QSharedPointer<SimpleJsonDB>(new SimpleJsonDB(QString(""), QDir(dbPath).filePath("db"), maxFlushDelayMillis));
+    }
+    mainDb->setFilterVmAndDomstoreKeys(true);
+    dbRoot = mainDb->readFromDisk();
 }
 
 DBTree::~DBTree()
 {
-
-}
-
-DBTree::DBTree(QString dbPath, int maxFlushDelayMillis) : dbRoot(), maxFlushDelay(maxFlushDelayMillis), mainDb(QDir(dbPath).filePath("db"), QString(""), maxFlushDelayMillis)
-{
-    qDebug() << "DBTree init(" << dbPath << "," << maxFlushDelay << ")";
-    mainDb.filterVmAndDomstoreKeys = true;
-    dbRoot = mainDb.readFromDisk();
 }
 
 QMPointer<QMJsonValue> DBTree::getObject(const QStringList &splitPath, const QMPointer<QMJsonValue> defaultValue)
