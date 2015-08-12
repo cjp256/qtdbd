@@ -2,31 +2,24 @@
 #define DBTREE_H
 
 #include <QObject>
+#include <qmjson.h>
 #include "simplejsondb.h"
-
-#include "rapidjson/document.h"
-#include "rapidjson/writer.h"
-#include "rapidjson/stringbuffer.h"
-using namespace rapidjson;
 
 class DBTree : public QObject
 {
     Q_OBJECT
 public:
     DBTree();
-    DBTree(QString dbPath, int maxFlushDelayMillis);
+    DBTree(const QString dbPath, int maxFlushDelayMillis);
     ~DBTree();
-    Value *getObject(const QStringList &splitPath);
-    void setObject(QStringList splitPath, Value &value);
-    QString valueToJsonString(Value *d);
-    Document dbRoot;
+    QMPointer<QMJsonValue> getObject(const QStringList &splitPath, const QMPointer<QMJsonValue> defaultValue);
+    void setObject(const QStringList &splitPath, const QString &value);
 private:
+    QMPointer<QMJsonValue> dbRoot;
     QString dbPath;
     int maxFlushDelay;
     SimpleJsonDB mainDb;
-
 signals:
-
 public slots:
 };
 

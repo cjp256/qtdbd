@@ -9,25 +9,22 @@
 #include <QHash>
 #include <QVariantMap>
 
-#include "rapidjson/document.h"
-#include "rapidjson/writer.h"
-#include "rapidjson/stringbuffer.h"
-using namespace rapidjson;
+#include <qmjson.h>
 
 class SimpleJsonDB: public QObject
 {
     Q_OBJECT
 public:
-    SimpleJsonDB(Value *v, QString vpath);
-    SimpleJsonDB(Value *v, QString path, QString vpath, int maxFlushDelayMillis);
+    SimpleJsonDB(const QString vpath);
+    SimpleJsonDB(const QString path, const QString vpath, int maxFlushDelayMillis);
     ~SimpleJsonDB();
     bool filterVmAndDomstoreKeys;
 public Q_SLOTS:
     QString jsonString();
-    void readFromDisk();
-    void writeToDisk();
+    QMPointer<QMJsonValue> readFromDisk();
+    void writeToDisk(const QString &jsonString);
 private:
-    Value *db;
+    QMPointer<QMJsonValue> db;
     QString path;
     QString vpath;
     int maxFlushDelay;

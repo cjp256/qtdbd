@@ -6,6 +6,7 @@
 #include <QDBusConnection>
 #include <QDBusMessage>
 #include "dbtree.h"
+#include <qmjson.h>
 
 class Db: public QObject,
           protected QDBusContext

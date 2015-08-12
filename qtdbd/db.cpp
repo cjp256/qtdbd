@@ -9,11 +9,6 @@
 #include <QtDebug>
 #include <QtDBus/QtDBus>
 
-#include "rapidjson/document.h"
-#include "rapidjson/writer.h"
-#include "rapidjson/stringbuffer.h"
-using namespace rapidjson;
-
 Db::Db(DBTree *dbTree) : dbTree(dbTree)
 {
 
@@ -55,47 +50,24 @@ QString Db::read(const QString &path)
     qDebug() << message().service() << " read(" << path << ")";
     QStringList split = path.split("/", QString::SplitBehavior::SkipEmptyParts);
 
-    Value *obj = dbTree->getObject(split);
+    QMPointer<QMJsonValue> null = QMPointer<QMJsonValue>(new QMJsonValue("null"));
+    QMPointer<QMJsonValue> obj = dbTree->getObject(split, null);
 
-    if (obj == nullptr) {
+    if (obj.isNull()) {
         qDebug() << "read() null object";
+        return "null";
+    }
+
+    if (obj->isBool() || obj->isString() || obj->isDouble()) {
+        return obj->toString();
+    }
+
+    if (obj->isObject() || obj->isArray()) {
         return "";
     }
 
-    QString retVal;
-
-    switch (obj->GetType())
-    {
-    case kFalseType:
-        retVal = "false";
-        break;
-    case kTrueType:
-        retVal = "true";
-        break;
-    case kObjectType:
-        retVal = "";
-        break;
-    case kArrayType:
-        retVal = "";
-        break;
-    case kStringType:
-        retVal = obj->GetString();
-        break;
-    case kNumberType:
-        retVal = QString::number(obj->GetInt64());
-        break;
-    case kNullType:
-        retVal = "null";
-        break;
-    default:
-        qWarning("read(): invalid object type!");
-        retVal = "";
-        break;
-    }
-
-    qDebug() << "returning:" << retVal;
-
-    return retVal;
+    qWarning("read(): invalid object type!");
+    return "";
 }
 
 QByteArray Db::read_binary(const QString &path)
@@ -114,8 +86,6 @@ void Db::write(const QString &path, const QString &value)
 {
     qDebug() << message().service() << " write(" << path << ", " << value << ")";
     QStringList split = path.split("/", QString::SplitBehavior::SkipEmptyParts);
-    Value x;
-    x.SetString(value.toLocal8Bit().data(), dbTree->dbRoot.GetAllocator());
-    dbTree->setObject(split, x);
+    dbTree->setObject(split, value);
 }
 

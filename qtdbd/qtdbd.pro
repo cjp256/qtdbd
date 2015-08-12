@@ -5,7 +5,7 @@
 #-------------------------------------------------
 
 QT       += core
-QT -= gui
+QT += gui
 QT += dbus
 
 TARGET = qtdbd
@@ -15,13 +15,13 @@ CONFIG += c++11
 
 TEMPLATE = app
 
+LIBS += -lqmjson
 
 SOURCES += main.cpp \
     db_adaptor.cpp \
     db.cpp \
     simplejsondb.cpp \
     dbtree.cpp
-
 #    tests/testdbtree.cpp
 
 HEADERS += \
@@ -29,5 +29,4 @@ HEADERS += \
     db.h \
     simplejsondb.h \
     dbtree.h
-
 #    tests/testdbtree.h
