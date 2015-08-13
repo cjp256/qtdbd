@@ -1,13 +1,17 @@
 
-#include "testdbtree.h"
+#include "testdbd.h"
 
 #include <QtTest/QtTest>
 
-void TestDBTree::toUpper()
+TestDBD::TestDBD()
+{
+
+}
+
+void TestDBD::test1()
 {
     QString str = "Hello";
     QCOMPARE(str.toUpper(), QString("HELLO"));
 }
 
-QTEST_MAIN(TestDBTree)
-#include "testqstring.moc"
+QTEST_MAIN(TestDBD)
