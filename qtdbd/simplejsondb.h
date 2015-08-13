@@ -20,11 +20,11 @@ public:
 public Q_SLOTS:
     QString jsonString();
     QMPointer<QMJsonValue> readFromDisk();
-    void writeToDisk(const QString &jsonString);
     void setFilterVmAndDomstoreKeys(bool filter);
     void setMaxFlushDelay(int maxFlushDelayMillis);
     void setWorkerThread(QThread *workerThread);
-    void dbChanged();
+    void flush();
+    void queueFlush(bool delayed);
 private:
     QMPointer<QMJsonValue> db;
     QString vpath;

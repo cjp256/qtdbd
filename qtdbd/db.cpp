@@ -88,4 +88,3 @@ void Db::write(const QString &path, const QString &value)
     QStringList split = path.split("/", QString::SplitBehavior::SkipEmptyParts);
     dbTree->setObject(split, value);
 }
-

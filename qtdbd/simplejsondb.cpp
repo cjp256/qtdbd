@@ -9,6 +9,7 @@
 SimpleJsonDB::SimpleJsonDB(const QString vpath, const QString path, int maxFlushDelayMillis) : db(), vpath(vpath), path(path), fileLock(), flushTimer(0), maxFlushDelay(maxFlushDelayMillis), skipDisk(false), filterVmAndDomstoreKeys(false)
 {
     flushTimer.setSingleShot(true);
+    QObject::connect(&flushTimer, &QTimer::timeout, this, &SimpleJsonDB::flush);
     qDebug() << db;
 }
 
@@ -45,8 +46,10 @@ QMPointer<QMJsonValue> SimpleJsonDB::readFromDisk()
     return db;
 }
 
-void SimpleJsonDB::writeToDisk(const QString &jsonString)
+void SimpleJsonDB::flush()
 {
+    QString jsonString = db->toJson();
+
     fileLock.lock();
 
     if (jsonString.size() <= 0) {
@@ -65,8 +68,12 @@ void SimpleJsonDB::writeToDisk(const QString &jsonString)
     fileLock.unlock();
 }
 
-void SimpleJsonDB::dbChanged()
+void SimpleJsonDB::queueFlush(bool delayed)
 {
+    if (!delayed) {
+        return flush();
+    }
+
     if (!flushTimer.isActive()) {
         flushTimer.start(maxFlushDelay);
     }
