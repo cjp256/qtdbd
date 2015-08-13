@@ -19,7 +19,8 @@ public:
     ~SimpleJsonDB();
 public Q_SLOTS:
     QString jsonString();
-    QMPointer<QMJsonValue> readFromDisk();
+    QMPointer<QMJsonValue> getValue();
+    void readFromDisk();
     void setFilterVmAndDomstoreKeys(bool filter);
     void setMaxFlushDelay(int maxFlushDelayMillis);
     void setWorkerThread(QThread *workerThread);

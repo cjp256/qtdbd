@@ -16,7 +16,7 @@ DBTree::DBTree(QString dbPath, int maxFlushDelayMillis) : dbRoot(), maxFlushDela
         mainDb = QSharedPointer<SimpleJsonDB>(new SimpleJsonDB(QString(""), QDir(dbPath).filePath("db"), maxFlushDelayMillis));
     }
     mainDb->setFilterVmAndDomstoreKeys(true);
-    dbRoot = mainDb->readFromDisk();
+    dbRoot = mainDb->getValue();
 }
 
 DBTree::~DBTree()

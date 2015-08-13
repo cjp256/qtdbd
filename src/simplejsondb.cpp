@@ -10,7 +10,7 @@ SimpleJsonDB::SimpleJsonDB(const QString vpath, const QString path, int maxFlush
 {
     flushTimer.setSingleShot(true);
     QObject::connect(&flushTimer, &QTimer::timeout, this, &SimpleJsonDB::flush);
-    db = readFromDisk();
+    readFromDisk();
     qDebug() << db;
 }
 
@@ -38,7 +38,12 @@ void SimpleJsonDB::setWorkerThread(QThread *workerThread)
     flushTimer.moveToThread(workerThread);
 }
 
-QMPointer<QMJsonValue> SimpleJsonDB::readFromDisk()
+QMPointer<QMJsonValue> SimpleJsonDB::getValue()
+{
+    return db;
+}
+
+void SimpleJsonDB::readFromDisk()
 {
     fileLock.lock();
 
@@ -53,8 +58,6 @@ QMPointer<QMJsonValue> SimpleJsonDB::readFromDisk()
     }
 
     fileLock.unlock();
-
-    return db;
 }
 
 void SimpleJsonDB::flush()
