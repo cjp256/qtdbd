@@ -13,9 +13,9 @@ class Db: public QObject,
 {
     Q_OBJECT
 public:
-    Db(DBTree *dbTree);
+    Db(DBTree *dbTree, bool lookupSenderId);
     ~Db();
-
+    QString getSenderId();
 public: // PROPERTIES
 public Q_SLOTS: // METHODS
     QString dump(const QString &path);
@@ -29,6 +29,7 @@ public Q_SLOTS: // METHODS
 Q_SIGNALS: // SIGNALS
 private:
     DBTree *dbTree;
+    bool lookupSenderId;
 };
 
 #endif // DB_H

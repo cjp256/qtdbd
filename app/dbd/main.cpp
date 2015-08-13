@@ -130,7 +130,7 @@ int main(int argc, char *argv[])
     }
 
     dbTree = new DBTree(g_cmdLineOptions.dbBaseDirectoryPath, g_cmdLineOptions.dbMaxDelayMillis);
-    Db *db = new Db(dbTree);
+    Db *db = new Db(dbTree, g_cmdLineOptions.domidLookupEnabled);
     new DbInterfaceAdaptor(db);
 
     QDBusConnection::sessionBus().registerObject("/", "com.citrix.xenclient.db", db, QDBusConnection::ExportAllSlots);

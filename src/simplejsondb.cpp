@@ -10,6 +10,7 @@ SimpleJsonDB::SimpleJsonDB(const QString vpath, const QString path, int maxFlush
 {
     flushTimer.setSingleShot(true);
     QObject::connect(&flushTimer, &QTimer::timeout, this, &SimpleJsonDB::flush);
+    db = readFromDisk();
     qDebug() << db;
 }
 
@@ -40,14 +41,18 @@ void SimpleJsonDB::setWorkerThread(QThread *workerThread)
 QMPointer<QMJsonValue> SimpleJsonDB::readFromDisk()
 {
     fileLock.lock();
-    db = QMJsonValue::fromJsonFile(path);
-    fileLock.unlock();
 
-    // if no json file exists,
+    if (path != ":memory:") {
+        db = QMJsonValue::fromJsonFile(path);
+    }
+
+    // if no json file exists, create empty object
     if (db.isNull()) {
         auto obj = QMPointer<QMJsonObject>(new QMJsonObject());
         db = QMPointer<QMJsonValue>(new QMJsonValue(obj));
     }
+
+    fileLock.unlock();
 
     return db;
 }

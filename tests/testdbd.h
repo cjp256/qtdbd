@@ -11,6 +11,7 @@ public:
     QStringList splitPath(QString path);
 private slots:
     void testDbTreeBasicGetSet();
+    void testDbBasicReadWrite();
 };
 
 #endif // TESTDBD_H
