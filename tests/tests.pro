@@ -15,3 +15,5 @@ SOURCES += testdbd.cpp
 HEADERS += testdbd.h
 
 LIBS += -L../src -ldb -lqmjson
+
+PRE_TARGETDEPS += ../src/libdb.a
