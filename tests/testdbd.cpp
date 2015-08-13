@@ -51,7 +51,6 @@ void TestDBD::testDbTreeBasicGetSet()
     //QCOMPARE(dbTree.getValue(splitPath(""))->toJson(QMJSONVALUE_OPTIMIZED), QString("{\"somekey\":\"somevalue\",\"some\":{\"other\":{\"key\":\"someothervalue2\"}}}"));
 }
 
-
 void TestDBD::testDbBasicReadWrite()
 {
     DBTree *dbTree = new DBTree(":memory:", 1000);
@@ -108,6 +107,73 @@ void TestDBD::testDbBasicReadWrite()
 
     QCOMPARE(db->read("/a/somekey"), QString("somevalue"));
     QCOMPARE(db->read("a/somekey"), QString("somevalue"));
+}
+
+void TestDBD::testDb1BasicReadWrite()
+{
+    DBTree *dbTree = new DBTree("tests/db-1", -1);
+    Db *db = new Db(dbTree, false);
+    new DbInterfaceAdaptor(db);
+
+    QCOMPARE(db->read("/"), QString(""));
+    QCOMPARE(db->read(""), QString(""));
+
+    QCOMPARE(db->read("/notexist"), QString(""));
+    QCOMPARE(db->read("notexist"), QString(""));
+
+    QCOMPARE(db->read("/does/not/exist"), QString(""));
+    QCOMPARE(db->read("does/not/exist"), QString(""));
+
+    db->write("/somekey", "somevalue");
+    QCOMPARE(db->read("/somekey"), QString("somevalue"));
+    QCOMPARE(db->read("somekey"), QString("somevalue"));
+
+    db->write("somekey", "somevalue2");
+    QCOMPARE(db->read("/somekey"), QString("somevalue2"));
+    QCOMPARE(db->read("somekey"), QString("somevalue2"));
+
+    db->write("/a/somekey", "somevalue");
+    QCOMPARE(db->read("/a/somekey"), QString("somevalue"));
+    QCOMPARE(db->read("a/somekey"), QString("somevalue"));
+
+    db->write("/a/b/somekey", "somevalue");
+    QCOMPARE(db->read("/a/b/somekey"), QString("somevalue"));
+    QCOMPARE(db->read("a/b/somekey"), QString("somevalue"));
+
+    db->write("/x/y/z/somekey", "somevalue");
+    QCOMPARE(db->read("/x/y/z/somekey"), QString("somevalue"));
+    QCOMPARE(db->read("x/y/z/somekey"), QString("somevalue"));
+
+    db->write("/x/y/z/somekey", "somevalue2");
+    QCOMPARE(db->read("/x/y/z/somekey"), QString("somevalue2"));
+    QCOMPARE(db->read("x/y/z/somekey"), QString("somevalue2"));
+
+    db->write("/x/y/somekey", "somevalue");
+    QCOMPARE(db->read("/x/y/somekey"), QString("somevalue"));
+    QCOMPARE(db->read("x/y/somekey"), QString("somevalue"));
+
+    db->write("/x/somekey", "somevalue");
+    QCOMPARE(db->read("/x/somekey"), QString("somevalue"));
+    QCOMPARE(db->read("x/somekey"), QString("somevalue"));
+    QCOMPARE(db->read("/x/y/somekey"), QString("somevalue"));
+    QCOMPARE(db->read("x/y/somekey"), QString("somevalue"));
+    QCOMPARE(db->read("/x/y/z/somekey"), QString("somevalue2"));
+    QCOMPARE(db->read("x/y/z/somekey"), QString("somevalue2"));
+
+    QCOMPARE(db->read("/a/somekey"), QString("somevalue"));
+    QCOMPARE(db->read("a/somekey"), QString("somevalue"));
+
+    // pull various types data of of the db
+    QCOMPARE(db->read("me"), QString("iwuzhere"));
+    QCOMPARE(db->read("house/address/street"), QString("55 liberty street"));
+    QCOMPARE(db->read("house/address/zip"), QString("13440"));
+    QCOMPARE(db->read("owner/alive"), QString("true"));
+    QCOMPARE(db->read("owner/head/eyes"), QString("blue"));
+    QCOMPARE(db->read("owner/height"), QString("56"));
+    QCOMPARE(db->read("null"), QString("null"));
+    QCOMPARE(db->read("order"), QString(""));
+    QCOMPARE(db->read("owner"), QString(""));
+    QCOMPARE(db->read("house"), QString(""));
 }
 
 QTEST_MAIN(TestDBD)

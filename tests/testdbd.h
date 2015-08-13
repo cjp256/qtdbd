@@ -12,6 +12,7 @@ public:
 private slots:
     void testDbTreeBasicGetSet();
     void testDbBasicReadWrite();
+    void testDb1BasicReadWrite();
 };
 
 #endif // TESTDBD_H

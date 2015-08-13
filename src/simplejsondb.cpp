@@ -64,6 +64,12 @@ void SimpleJsonDB::flush()
 {
     QString jsonString = db->toJson();
 
+    // skip flush if delay is -1
+    if (maxFlushDelay == -1) {
+        qDebug() << "skipping flush for:" << jsonString;
+        return;
+    }
+
     fileLock.lock();
 
     if (jsonString.size() <= 0) {

@@ -66,10 +66,21 @@ QString Db::read(const QString &path)
         return "";
     }
 
-    qDebug() << "x=" << value << "json=" << value->toJson() << "type=" << value->type();
+    qDebug() << "value=" << value << " toJson=" << value->toJson() << "type=" << value->type() << "toString=" << value->toString();
 
-    if (value->isBool() || value->isString() || value->isDouble()) {
+    if (value->isBool()) {
+        if (value->toBool()) {
+            return "true";
+        }
+        return "false";
+    }
+
+    if (value->isString()) {
         return value->toString();
+    }
+
+    if (value->isDouble()) {
+        return QString::number(value->toDouble());
     }
 
     if (value->isObject() || value->isArray()) {

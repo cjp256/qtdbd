@@ -1,4 +1,5 @@
 {
+    "null": null,
     "house": {
         "address": {
             "street": "55 liberty street",
@@ -14,5 +15,6 @@
         },
         "height": 56,
         "name": "john aka jack"
-    }
+    },
+    "order": [1,2,3,4]
 }
