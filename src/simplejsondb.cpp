@@ -43,6 +43,12 @@ QMPointer<QMJsonValue> SimpleJsonDB::readFromDisk()
     db = QMJsonValue::fromJsonFile(path);
     fileLock.unlock();
 
+    // if no json file exists,
+    if (db.isNull()) {
+        auto obj = QMPointer<QMJsonObject>(new QMJsonObject());
+        db = QMPointer<QMJsonValue>(new QMJsonValue(obj));
+    }
+
     return db;
 }
 

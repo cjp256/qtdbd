@@ -2,6 +2,8 @@
 #include "testdbd.h"
 
 #include <QtTest/QtTest>
+#include <dbtree.h>
+#include <qmjson.h>
 
 TestDBD::TestDBD()
 {
@@ -10,8 +12,11 @@ TestDBD::TestDBD()
 
 void TestDBD::test1()
 {
-    QString str = "Hello";
-    QCOMPARE(str.toUpper(), QString("HELLO"));
+    //DBTree dbTree();
+
+    //QMPointer<QMJsonValue> null = QMPointer<QMJsonValue>(new QMJsonValue());
+
+    //QCOMPARE(dbTree.getObject("", null), "{}");
 }
 
 QTEST_MAIN(TestDBD)

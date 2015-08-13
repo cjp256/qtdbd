@@ -23,11 +23,11 @@ DBTree::~DBTree()
 {
 }
 
-QMPointer<QMJsonValue> DBTree::getObject(const QStringList &splitPath, const QMPointer<QMJsonValue> defaultValue)
+QMPointer<QMJsonValue> DBTree::getObject(const QStringList &splitPath)
 {
     QMPointer<QMJsonValue> obj = dbRoot;
 
-    qDebug() << "getObject(): db = " << obj;
+    qDebug() << "getObject(): db = " << obj->toJson();
 
     // if it is top of tree, return the whole tree
     if (splitPath.length() == 0) {
@@ -41,7 +41,12 @@ QMPointer<QMJsonValue> DBTree::getObject(const QStringList &splitPath, const QMP
         // make sure next level is an object
         if (!obj->isObject()) {
             qDebug() << "getObject() failed to traverse path:" << obj;
-            return defaultValue;
+            return QMPointer<QMJsonValue>();
+        }
+
+        if (!obj->toObject()->contains(part)) {
+            qDebug() << "getObject() failed to traverse next path:" << obj;
+            return QMPointer<QMJsonValue>();
         }
 
         obj = obj->toObject()->value(part);

@@ -50,25 +50,31 @@ QString Db::read(const QString &path)
     qDebug() << message().service() << " read(" << path << ")";
     QStringList split = path.split("/", QString::SplitBehavior::SkipEmptyParts);
 
-    QMPointer<QMJsonValue> null = QMPointer<QMJsonValue>(new QMJsonValue("null"));
-    QMPointer<QMJsonValue> obj = dbTree->getObject(split, null);
+    QMPointer<QMJsonValue> value = dbTree->getObject(split);
 
-    if (obj.isNull()) {
-        qDebug() << "read() null object";
-        return "null";
-    }
-
-    if (obj->isBool() || obj->isString() || obj->isDouble()) {
-        return obj->toString();
-    }
-
-    if (obj->isObject() || obj->isArray()) {
+    if (value.isNull()) {
+        qDebug() << "read() no object found";
         return "";
     }
 
-    qWarning("read(): invalid object type!");
+    qDebug() << "x=" << value << "json=" << value->toJson() << "type=" << value->type();
+
+    if (value->isBool() || value->isString() || value->isDouble()) {
+        return value->toString();
+    }
+
+    if (value->isObject() || value->isArray()) {
+        return "";
+    }
+
+    if (value->isNull()) {
+        return "null";
+    }
+
+    qWarning("read(): invalid value type!");
     return "";
 }
+
 
 QByteArray Db::read_binary(const QString &path)
 {
