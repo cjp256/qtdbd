@@ -8,8 +8,9 @@ class TestDBD: public QObject
 Q_OBJECT
 public:
     TestDBD();
+    QStringList splitPath(QString path);
 private slots:
-    void test1();
+    void testDbTreeBasicGetSet();
 };
 
 #endif // TESTDBD_H
