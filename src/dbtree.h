@@ -12,8 +12,8 @@ class DBTree : public QObject
 public:
     DBTree(const QString dbPath = ":memory:", int maxFlushDelayMillis = 3000);
     ~DBTree();
-    QMPointer<QMJsonValue> getObject(const QStringList &splitPath);
-    void setObject(const QStringList &splitPath, const QString &value);
+    QMPointer<QMJsonValue> getValue(const QStringList &splitPath);
+    void setValue(const QStringList &splitPath, const QString &value);
 private:
     QMPointer<QMJsonValue> dbRoot;
     QString dbPath;

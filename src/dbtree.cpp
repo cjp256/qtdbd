@@ -23,11 +23,11 @@ DBTree::~DBTree()
 {
 }
 
-QMPointer<QMJsonValue> DBTree::getObject(const QStringList &splitPath)
+QMPointer<QMJsonValue> DBTree::getValue(const QStringList &splitPath)
 {
     QMPointer<QMJsonValue> obj = dbRoot;
 
-    qDebug() << "getObject(): db = " << obj->toJson();
+    qDebug() << "getValue(): db = " << obj->toJson();
 
     // if it is top of tree, return the whole tree
     if (splitPath.length() == 0) {
@@ -36,35 +36,35 @@ QMPointer<QMJsonValue> DBTree::getObject(const QStringList &splitPath)
 
     // traverse tree parts
     foreach (const QString &part, splitPath) {
-        qDebug() << "getObject: part:" << part << "obj:" << obj << "type:" << obj->type();
+        qDebug() << "getValue: part:" << part << "obj:" << obj << "type:" << obj->type();
 
         // make sure next level is an object
         if (!obj->isObject()) {
-            qDebug() << "getObject() failed to traverse path:" << obj;
+            qDebug() << "getValue() failed to traverse path:" << obj;
             return QMPointer<QMJsonValue>();
         }
 
         if (!obj->toObject()->contains(part)) {
-            qDebug() << "getObject() failed to traverse next path:" << obj;
+            qDebug() << "getValue() failed to traverse next path:" << obj;
             return QMPointer<QMJsonValue>();
         }
 
         obj = obj->toObject()->value(part);
 
-        qDebug() << "getObject: next object:" << obj;
+        qDebug() << "getValue: next object:" << obj;
     }
 
-    qDebug() << "getObject: returning object:" << obj;
+    qDebug() << "getValue: returning object:" << obj;
     return obj;
 }
 
-void DBTree::setObject(const QStringList &splitPath, const QString &value)
+void DBTree::setValue(const QStringList &splitPath, const QString &value)
 {
     QMPointer<QMJsonValue> obj = dbRoot;
 
     // if it is top of tree, ignore
     if (splitPath.length() == 0) {
-        qWarning("setObject: ignoring attempt to write to root");
+        qWarning("setValue: ignoring attempt to write to root");
         return;
     }
 
@@ -74,7 +74,7 @@ void DBTree::setObject(const QStringList &splitPath, const QString &value)
 
     // make tree as required
     foreach (const QString &part, parentList) {
-        qDebug() << "setObject: part:" << part;
+        qDebug() << "setValue: part:" << part;
 
         if (!obj->toObject()->contains(part)) {
             obj->toObject()->insert(part, QMPointer<QMJsonObject>(new QMJsonObject()));
@@ -84,7 +84,7 @@ void DBTree::setObject(const QStringList &splitPath, const QString &value)
 
         // make sure next level is an object
         if (!obj->isObject()) {
-            qDebug() << "setObject() failed to traverse path:" << obj;
+            qDebug() << "setValue() failed to traverse path:" << obj;
             return;
         }
     }

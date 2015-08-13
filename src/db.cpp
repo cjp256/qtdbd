@@ -59,7 +59,7 @@ QString Db::read(const QString &path)
     qDebug() << getSenderId() << " read(" << path << ")";
     QStringList split = path.split("/", QString::SplitBehavior::SkipEmptyParts);
 
-    QMPointer<QMJsonValue> value = dbTree->getObject(split);
+    QMPointer<QMJsonValue> value = dbTree->getValue(split);
 
     if (value.isNull()) {
         qDebug() << "read() no object found";
@@ -101,5 +101,5 @@ void Db::write(const QString &path, const QString &value)
 {
     qDebug() << getSenderId() << " write(" << path << ", " << value << ")";
     QStringList split = path.split("/", QString::SplitBehavior::SkipEmptyParts);
-    dbTree->setObject(split, value);
+    dbTree->setValue(split, value);
 }
