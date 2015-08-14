@@ -12,6 +12,7 @@ public:
 private slots:
     void testDbTreeBasicGetSet();
     void testDbBasicReadWrite();
+    void testDbBasicDump();
     void testDb1BasicReadWrite();
     void testDb1VariousTypesRead();
 };

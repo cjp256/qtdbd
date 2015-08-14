@@ -30,9 +30,18 @@ QString Db::getSenderId()
 
 QString Db::dump(const QString &path)
 {
-    QString value("dump");
     qDebug() << getSenderId() << " dump(" << path << ")";
-    return value;
+
+    QStringList split = path.split("/", QString::SplitBehavior::SkipEmptyParts);
+
+    QMPointer<QMJsonValue> value = dbTree->getValue(split);
+
+    if (value.isNull()) {
+        qDebug() << "read() no object found";
+        return "null";
+    }
+
+    return value->toJson(QMJSONVALUE_OPTIMIZED);
 }
 
 bool Db::exists(const QString &path)
