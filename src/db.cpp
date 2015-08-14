@@ -47,6 +47,7 @@ QString Db::dump(const QString &path)
 bool Db::exists(const QString &path)
 {
     qDebug() << getSenderId() << " exists(" << path << ")";
+
     QStringList split = path.split("/", QString::SplitBehavior::SkipEmptyParts);
 
     QMPointer<QMJsonValue> value = dbTree->getValue(split);
@@ -61,9 +62,17 @@ void Db::inject(const QString &path, const QString &value)
 
 QStringList Db::list(const QString &path)
 {
-    QStringList value;
     qDebug() << getSenderId() << " list(" << path << ")";
-    return value;
+
+    QStringList split = path.split("/", QString::SplitBehavior::SkipEmptyParts);
+
+    QMPointer<QMJsonValue> value = dbTree->getValue(split);
+
+    if (!value->isObject()) {
+        return QStringList();
+    }
+
+    return value->toObject()->keys();
 }
 
 QString Db::read(const QString &path)

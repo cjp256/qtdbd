@@ -235,4 +235,40 @@ void TestDBD::testDbBasicExists()
     QCOMPARE(db->exists("somekey"), true);
 }
 
+void TestDBD::testDbBasicList()
+{
+    DBTree *dbTree = new DBTree(":memory:", 1000);
+    Db *db = new Db(dbTree, false);
+    new DbInterfaceAdaptor(db);
+
+    QCOMPARE(db->list("/"), QStringList());
+    QCOMPARE(db->list(""), QStringList());
+
+    db->write("/somekey", "somevalue");
+    QCOMPARE(db->list("/somekey"), QStringList());
+
+    db->write("/x/a", "somevalue");
+    db->write("/x/b", "somevalue");
+    db->write("/x/c", "somevalue");
+
+    QStringList results = db->list("/x");
+    results.sort();
+
+    QStringList expected;
+    expected << "a" << "b" << "c";
+    expected.sort();
+    QCOMPARE(db->list("/x"), expected);
+
+    db->write("/x/d", "somevalue");
+
+    results = db->list("/x");
+    results.sort();
+
+    expected << "d";
+    expected.sort();
+    QCOMPARE(results, expected);
+
+    QCOMPARE(db->list("/x/d"), QStringList());
+}
+
 QTEST_MAIN(TestDBD)

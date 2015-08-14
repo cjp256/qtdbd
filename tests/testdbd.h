@@ -16,6 +16,7 @@ private slots:
     void testDb1VariousTypesRead();
     void testDbBasicDump();
     void testDbBasicExists();
+    void testDbBasicList();
 };
 
 #endif // TESTDBD_H
