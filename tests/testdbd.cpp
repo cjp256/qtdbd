@@ -109,21 +109,6 @@ void TestDBD::testDbBasicReadWrite()
     QCOMPARE(db->read("a/somekey"), QString("somevalue"));
 }
 
-void TestDBD::testDbBasicDump()
-{
-    DBTree *dbTree = new DBTree(":memory:", 1000);
-    Db *db = new Db(dbTree, false);
-    new DbInterfaceAdaptor(db);
-
-    QCOMPARE(db->read("/"), QString(""));
-    QCOMPARE(db->read(""), QString(""));
-
-    db->write("/somekey", "somevalue");
-    QCOMPARE(db->read("/somekey"), QString("somevalue"));
-    QCOMPARE(db->dump("/somekey"), QString("\"somevalue\""));
-    QCOMPARE(db->dump("/"), QString("{\"somekey\":\"somevalue\"}"));
-}
-
 void TestDBD::testDb1BasicReadWrite()
 {
     // test read write on keys that don't exist in db
@@ -210,6 +195,44 @@ void TestDBD::testDb1VariousTypesRead()
     QCOMPARE(db->read("object/object/number"), QString("56"));
     QCOMPARE(db->read("object/object/null"), QString("null"));
     QCOMPARE(db->read("object/object/array"), QString(""));
+}
+
+
+void TestDBD::testDbBasicDump()
+{
+    DBTree *dbTree = new DBTree(":memory:", 1000);
+    Db *db = new Db(dbTree, false);
+    new DbInterfaceAdaptor(db);
+
+    QCOMPARE(db->read("/"), QString(""));
+    QCOMPARE(db->read(""), QString(""));
+
+    db->write("/somekey", "somevalue");
+    QCOMPARE(db->read("/somekey"), QString("somevalue"));
+    QCOMPARE(db->dump("/somekey"), QString("\"somevalue\""));
+    QCOMPARE(db->dump("somekey"), QString("\"somevalue\""));
+    QCOMPARE(db->dump("/"), QString("{\"somekey\":\"somevalue\"}"));
+    QCOMPARE(db->dump(""), QString("{\"somekey\":\"somevalue\"}"));
+}
+
+void TestDBD::testDbBasicExists()
+{
+    DBTree *dbTree = new DBTree(":memory:", 1000);
+    Db *db = new Db(dbTree, false);
+    new DbInterfaceAdaptor(db);
+
+    QCOMPARE(db->exists("/"), true);
+    QCOMPARE(db->exists(""), true);
+
+    QCOMPARE(db->exists("/notexists"), false);
+    QCOMPARE(db->exists("notexists"), false);
+
+    QCOMPARE(db->exists("/not/exists"), false);
+    QCOMPARE(db->exists("not/exists"), false);
+
+    db->write("/somekey", "somevalue");
+    QCOMPARE(db->exists("/somekey"), true);
+    QCOMPARE(db->exists("somekey"), true);
 }
 
 QTEST_MAIN(TestDBD)
