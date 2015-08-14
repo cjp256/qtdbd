@@ -111,6 +111,7 @@ void TestDBD::testDbBasicReadWrite()
 
 void TestDBD::testDb1BasicReadWrite()
 {
+    // test read write on keys that don't exist in db
     DBTree *dbTree = new DBTree("tests/db-1", -1);
     Db *db = new Db(dbTree, false);
     new DbInterfaceAdaptor(db);
@@ -162,18 +163,38 @@ void TestDBD::testDb1BasicReadWrite()
 
     QCOMPARE(db->read("/a/somekey"), QString("somevalue"));
     QCOMPARE(db->read("a/somekey"), QString("somevalue"));
+}
+
+void TestDBD::testDb1VariousTypesRead()
+{
+    // test read of various types that exist in db
+    DBTree *dbTree = new DBTree("tests/db-1", -1);
+    Db *db = new Db(dbTree, false);
+    new DbInterfaceAdaptor(db);
+
+    QCOMPARE(db->read("/"), QString(""));
 
     // pull various types data of of the db
-    QCOMPARE(db->read("me"), QString("iwuzhere"));
-    QCOMPARE(db->read("house/address/street"), QString("55 liberty street"));
-    QCOMPARE(db->read("house/address/zip"), QString("13440"));
-    QCOMPARE(db->read("owner/alive"), QString("true"));
-    QCOMPARE(db->read("owner/head/eyes"), QString("blue"));
-    QCOMPARE(db->read("owner/height"), QString("56"));
+    QCOMPARE(db->read("booltrue"), QString("true"));
+    QCOMPARE(db->read("boolfalse"), QString("false"));
+    QCOMPARE(db->read("string"), QString("blue"));
+    QCOMPARE(db->read("number"), QString("56"));
     QCOMPARE(db->read("null"), QString("null"));
-    QCOMPARE(db->read("order"), QString(""));
-    QCOMPARE(db->read("owner"), QString(""));
-    QCOMPARE(db->read("house"), QString(""));
+    QCOMPARE(db->read("array"), QString(""));
+    QCOMPARE(db->read("object"), QString(""));
+    QCOMPARE(db->read("object/booltrue"), QString("true"));
+    QCOMPARE(db->read("object/boolfalse"), QString("false"));
+    QCOMPARE(db->read("object/string"), QString("blue"));
+    QCOMPARE(db->read("object/number"), QString("56"));
+    QCOMPARE(db->read("object/null"), QString("null"));
+    QCOMPARE(db->read("object/array"), QString(""));
+    QCOMPARE(db->read("object/object"), QString(""));
+    QCOMPARE(db->read("object/object/booltrue"), QString("true"));
+    QCOMPARE(db->read("object/object/boolfalse"), QString("false"));
+    QCOMPARE(db->read("object/object/string"), QString("blue"));
+    QCOMPARE(db->read("object/object/number"), QString("56"));
+    QCOMPARE(db->read("object/object/null"), QString("null"));
+    QCOMPARE(db->read("object/object/array"), QString(""));
 }
 
 QTEST_MAIN(TestDBD)

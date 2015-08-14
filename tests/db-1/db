@@ -1,20 +1,24 @@
 {
     "null": null,
-    "house": {
-        "address": {
-            "street": "55 liberty street",
-            "zip": 13440
+    "booltrue": true,
+    "boolfalse": false,
+    "string": "blue",
+    "number": 56,
+    "array": [1,2,3,4,5],
+    "object": {
+        "null": null,
+        "booltrue": true,
+        "boolfalse": false,
+        "string": "blue",
+        "number": 56,
+        "array": [1,2,3,4,5],
+        "object": {
+            "null": null,
+            "booltrue": true,
+            "boolfalse": false,
+            "string": "blue",
+            "number": 56,
+            "array": [1,2,3,4,5],
         }
-    },
-    "me": "iwuzhere",
-    "owner": {
-        "alive": true,
-        "head": {
-            "eyes": "blue",
-            "hair": "brown"
-        },
-        "height": 56,
-        "name": "john aka jack"
-    },
-    "order": [1,2,3,4]
+    }
 }
