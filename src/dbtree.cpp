@@ -92,3 +92,40 @@ void DBTree::setValue(const QStringList &splitPath, const QString &value)
     obj->toObject()->insert(key, QMPointer<QMJsonValue>(new QMJsonValue(value)));
     return;
 }
+
+void DBTree::rmValue(const QStringList &splitPath)
+{
+    QMPointer<QMJsonValue> obj = dbRoot;
+
+    // if it is top of tree, ignore
+    if (splitPath.length() == 0) {
+        qWarning("rmValue: ignoring attempt to write to root");
+        return;
+    }
+
+    // split key from parent path values
+    QStringList parentList(splitPath);
+    QString key = parentList.takeLast();
+
+    // iterate through parent objects
+    foreach (const QString &part, parentList) {
+        qDebug() << "rmValue: part:" << part;
+
+        // bail if parent doesn't exist
+        if (!obj->toObject()->contains(part)) {
+            return;
+        }
+
+        obj = obj->toObject()->value(part);
+
+        // bail if next level is not an object
+        if (!obj->isObject()) {
+            qDebug() << "rmValue() failed to traverse path:" << obj;
+            return;
+        }
+    }
+
+    obj->toObject()->remove(key);
+}
+
+

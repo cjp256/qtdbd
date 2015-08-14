@@ -127,6 +127,8 @@ QByteArray Db::read_binary(const QString &path)
 void Db::rm(const QString &path)
 {
     qDebug() << getSenderId() << " rm(" << path << ")";
+    QStringList split = path.split("/", QString::SplitBehavior::SkipEmptyParts);
+    dbTree->rmValue(split);
 }
 
 void Db::write(const QString &path, const QString &value)
