@@ -34,21 +34,21 @@ void TestDBD::testDbTreeBasicGetSet()
     QCOMPARE(dbTree.getValue(path)->toJson(), QString("\"somevalue\""));
     QCOMPARE(dbTree.getValue(path)->isString(), true);
     QCOMPARE(dbTree.getValue(path)->toString(), QString("somevalue"));
-    QCOMPARE(dbTree.getValue(splitPath(""))->toJson(QMJSONVALUE_OPTIMIZED), QString("{\"somekey\":\"somevalue\"}"));
+    QCOMPARE(dbTree.getValue(splitPath(""))->toJson(QMJsonFormat_Optimized, QMJsonSort_CaseSensitive), QString("{\"somekey\":\"somevalue\"}"));
 
     path = splitPath("/some/other/key");
     dbTree.setValue(path, "someothervalue");
     QCOMPARE(dbTree.getValue(path)->toJson(), QString("\"someothervalue\""));
     QCOMPARE(dbTree.getValue(path)->isString(), true);
     QCOMPARE(dbTree.getValue(path)->toString(), QString("someothervalue"));
-    //QCOMPARE(dbTree.getValue(splitPath(""))->toJson(QMJSONVALUE_OPTIMIZED), QString("{\"somekey\":\"somevalue\",\"some\":{\"other\":{\"key\":\"someothervalue\"}}}"));
+    QCOMPARE(dbTree.getValue(splitPath(""))->toJson(QMJsonFormat_Optimized, QMJsonSort_CaseSensitive), QString("{\"some\":{\"other\":{\"key\":\"someothervalue\"}},\"somekey\":\"somevalue\"}"));
 
     path = splitPath("/some/other/key");
     dbTree.setValue(path, "someothervalue2");
     QCOMPARE(dbTree.getValue(path)->toJson(), QString("\"someothervalue2\""));
     QCOMPARE(dbTree.getValue(path)->isString(), true);
     QCOMPARE(dbTree.getValue(path)->toString(), QString("someothervalue2"));
-    //QCOMPARE(dbTree.getValue(splitPath(""))->toJson(QMJSONVALUE_OPTIMIZED), QString("{\"somekey\":\"somevalue\",\"some\":{\"other\":{\"key\":\"someothervalue2\"}}}"));
+    QCOMPARE(dbTree.getValue(splitPath(""))->toJson(QMJsonFormat_Optimized, QMJsonSort_CaseSensitive), QString("{\"some\":{\"other\":{\"key\":\"someothervalue2\"}},\"somekey\":\"somevalue\"}"));
 }
 
 void TestDBD::testDbBasicReadWrite()

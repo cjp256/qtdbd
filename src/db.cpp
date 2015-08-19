@@ -41,7 +41,7 @@ QString Db::dump(const QString &path)
         return "null";
     }
 
-    return value->toJson(QMJSONVALUE_OPTIMIZED);
+    return value->toJson(QMJsonFormat_Optimized);
 }
 
 bool Db::exists(const QString &path)
