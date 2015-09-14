@@ -58,6 +58,8 @@ bool Db::exists(const QString &path)
 void Db::inject(const QString &path, const QString &value)
 {
     qDebug() << getSenderId() << " inject(" << path << ", " << value << ")";
+    QStringList split = path.split("/", QString::SplitBehavior::SkipEmptyParts);
+    dbTree->mergeValue(split, value);
 }
 
 QStringList Db::list(const QString &path)

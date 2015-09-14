@@ -18,6 +18,7 @@ private slots:
     void testDbBasicExists();
     void testDbBasicList();
     void testDbBasicRm();
+    void testDbBasicInject();
 };
 
 #endif // TESTDBD_H

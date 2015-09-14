@@ -128,4 +128,39 @@ void DBTree::rmValue(const QStringList &splitPath)
     obj->toObject()->remove(key);
 }
 
+void DBTree::mergeValue(const QStringList &splitPath, const QString &value)
+{
+    QMPointer<QMJsonValue> obj = dbRoot;
 
+    // if it is top of tree, ignore
+    if (splitPath.length() == 0) {
+        qWarning("setValue: ignoring attempt to write to root");
+        return;
+    }
+
+    QStringList parentList(splitPath);
+
+    // iterate through parent objects
+    foreach (const QString &part, parentList) {
+        qDebug() << "mergeValue: part:" << part;
+
+        // create missing children nodes
+        if (!obj->toObject()->contains(part)) {
+            obj->toObject()->insert(part, QMPointer<QMJsonObject>(new QMJsonObject()));
+        }
+
+        obj = obj->toObject()->value(part);
+
+        // bail if next level is not an object
+        if (!obj->isObject()) {
+            qDebug() << "mergeValue() failed to traverse path:" << obj;
+            return;
+        }
+    }
+
+    auto mergeObj = QMPointer<QMJsonValue>(QMJsonValue::fromJson(value))->toObject();
+\
+    qDebug() << "mergeValue(): attempting merge obj=" << obj << "mergeObj=" << mergeObj;
+
+    obj->toObject()->unite(mergeObj, QMJsonReplacementPolicy_Replace, QMJsonArrayUnitePolicy_Append);
+}

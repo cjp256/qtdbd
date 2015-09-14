@@ -14,6 +14,7 @@ public:
     ~DBTree();
     QMPointer<QMJsonValue> getValue(const QStringList &splitPath);
     void setValue(const QStringList &splitPath, const QString &value);
+    void mergeValue(const QStringList &splitPath, const QString &value);
     void rmValue(const QStringList &splitPath);
 private:
     QMPointer<QMJsonValue> dbRoot;
