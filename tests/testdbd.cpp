@@ -402,30 +402,23 @@ void TestDBD::testDbBasicInject()
     auto dumpstr = dumpval->toJson(QMJsonFormat_Optimized, QMJsonSort_CaseSensitive);
 
     QCOMPARE(str, dumpstr);
+    QCOMPARE(dumpval->toObject()->value("uuid")->toString(), QString("00000000-0000-0000-0000-000000000002"));
+    QCOMPARE(dumpval->toObject()->value("config")->toObject()->value("pae")->toString(), QString("true"));
 
     // twiddle some bits
-    auto someNdvmObj = val->toObject();
-
-    auto newUuid = QMPointer<QMJsonValue>(new QMJsonValue(QString("12345")));
-
-    someNdvmObj->insert("uuid", newUuid);
-    someNdvmObj->value("config")->toObject()->value("pae")->fromBool(false);
+    val->toObject()->value("uuid")->fromString("12345");
+    val->toObject()->value("config")->toObject()->value("pae")->fromString("false");
 
     str = val->toJson(QMJsonFormat_Optimized, QMJsonSort_CaseSensitive);
-
-    // pre-check
-    QCOMPARE(dumpval->toObject()->value("uuid")->toString(), QString("00000000-0000-0000-0000-000000000002"));
-    QCOMPARE(dumpval->toObject()->value("config")->toObject()->value("pae")->toBool(), true);
 
     db->inject("/vm/somendvm", str);
 
     dumpval = QMJsonValue::fromJson(db->dump("/vm/somendvm"));
     dumpstr = dumpval->toJson(QMJsonFormat_Optimized, QMJsonSort_CaseSensitive);
 
-    // post-check
     QCOMPARE(str, dumpstr);
     QCOMPARE(dumpval->toObject()->value("uuid")->toString(), QString("12345"));
-    QCOMPARE(dumpval->toObject()->value("config")->toObject()->value("pae")->toBool(), false);
+    QCOMPARE(dumpval->toObject()->value("config")->toObject()->value("pae")->toString(), QString("false"));
 }
 
 QTEST_MAIN(TestDBD)

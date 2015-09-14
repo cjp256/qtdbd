@@ -33,7 +33,6 @@ QString Db::dump(const QString &path)
     qDebug() << getSenderId() << " dump(" << path << ")";
 
     QStringList split = path.split("/", QString::SplitBehavior::SkipEmptyParts);
-
     QMPointer<QMJsonValue> value = dbTree->getValue(split);
 
     if (value.isNull()) {
@@ -49,7 +48,6 @@ bool Db::exists(const QString &path)
     qDebug() << getSenderId() << " exists(" << path << ")";
 
     QStringList split = path.split("/", QString::SplitBehavior::SkipEmptyParts);
-
     QMPointer<QMJsonValue> value = dbTree->getValue(split);
 
     return !value.isNull();
@@ -58,7 +56,9 @@ bool Db::exists(const QString &path)
 void Db::inject(const QString &path, const QString &value)
 {
     qDebug() << getSenderId() << " inject(" << path << ", " << value << ")";
+
     QStringList split = path.split("/", QString::SplitBehavior::SkipEmptyParts);
+
     dbTree->mergeValue(split, value);
 }
 
@@ -67,7 +67,6 @@ QStringList Db::list(const QString &path)
     qDebug() << getSenderId() << " list(" << path << ")";
 
     QStringList split = path.split("/", QString::SplitBehavior::SkipEmptyParts);
-
     QMPointer<QMJsonValue> value = dbTree->getValue(split);
 
     if (!value->isObject()) {
@@ -80,8 +79,8 @@ QStringList Db::list(const QString &path)
 QString Db::read(const QString &path)
 {
     qDebug() << getSenderId() << " read(" << path << ")";
-    QStringList split = path.split("/", QString::SplitBehavior::SkipEmptyParts);
 
+    QStringList split = path.split("/", QString::SplitBehavior::SkipEmptyParts);
     QMPointer<QMJsonValue> value = dbTree->getValue(split);
 
     if (value.isNull()) {
@@ -95,6 +94,7 @@ QString Db::read(const QString &path)
         if (value->toBool()) {
             return "true";
         }
+
         return "false";
     }
 
@@ -121,21 +121,27 @@ QString Db::read(const QString &path)
 
 QByteArray Db::read_binary(const QString &path)
 {
-    QByteArray value;
     qDebug() << getSenderId() << " read_binary(" << path << ")";
+
+    QByteArray value;
+
     return value;
 }
 
 void Db::rm(const QString &path)
 {
     qDebug() << getSenderId() << " rm(" << path << ")";
+
     QStringList split = path.split("/", QString::SplitBehavior::SkipEmptyParts);
+
     dbTree->rmValue(split);
 }
 
 void Db::write(const QString &path, const QString &value)
 {
     qDebug() << getSenderId() << " write(" << path << ", " << value << ")";
+
     QStringList split = path.split("/", QString::SplitBehavior::SkipEmptyParts);
+
     dbTree->setValue(split, value);
 }
