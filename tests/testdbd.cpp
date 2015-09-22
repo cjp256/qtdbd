@@ -3,6 +3,7 @@
 #include "db.h"
 #include "db_adaptor.h"
 
+#include <QTemporaryDir>
 #include <QtTest/QtTest>
 #include <dbtree.h>
 #include <qmjson.h>
@@ -15,6 +16,53 @@ TestDBD::TestDBD()
 QStringList TestDBD::splitPath(QString path)
 {
     return QString(path).split("/", QString::SplitBehavior::SkipEmptyParts);
+}
+
+bool TestDBD::copyDirectory(const QString &srcPath, const QString &dstPath)
+{
+    QDir srcDir(srcPath);
+    QDir dstDir(dstPath);
+
+    qDebug() << "copying: " << srcDir.absoluteFilePath(".") << " to: " << dstDir.absoluteFilePath(".");
+
+    // make sure specified destination directory is created
+    if (!dstDir.exists()){
+        dstDir.mkpath(".");
+    }
+
+    // copy over all files, and recursively copy directories
+    foreach (const QString &fileName, srcDir.entryList(QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot | QDir::Hidden | QDir::System)) {
+        const QString newSrcPath = srcPath + QDir::separator() + fileName;
+        const QString newDstPath = dstPath + QDir::separator() + fileName;
+
+        qDebug() << "copying: " << newSrcPath << " to: " << newDstPath;
+
+        QFileInfo srcFileInfo(newSrcPath);
+
+        if (srcFileInfo.isDir()) {
+            if (!copyDirectory(newSrcPath, newDstPath)) {
+                return false;
+            }
+        } else {
+            if (!QFile::copy(newSrcPath, newDstPath)) {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
+QString TestDBD::prepTestDB(const QString &dbPath)
+{
+    QTemporaryDir dstDir("/tmp/dbd-tests-XXXXXX");
+
+    dstDir.setAutoRemove(false);
+
+    if (!copyDirectory(dbPath, dstDir.path())) {
+        return QString();
+    }
+
+    return dstDir.path();
 }
 
 void TestDBD::testDbTreeBasicGetSet()
@@ -116,7 +164,13 @@ void TestDBD::testDbBasicReadWrite()
 void TestDBD::testDb1BasicReadWrite()
 {
     // test read write on keys that don't exist in db
-    DBTree *dbTree = new DBTree("tests/db-1", -1);
+    QString testSrcDir = QString("tests") + QDir::separator() + QString("db-1");
+    QString testDstDir = prepTestDB(testSrcDir);
+
+    qDebug() << "testing database copied to: " << testDstDir;
+
+    DBTree *dbTree = new DBTree(testDstDir, 0);
+
     Db *db = new Db(dbTree, false);
     new DbInterfaceAdaptor(db);
 
@@ -172,7 +226,13 @@ void TestDBD::testDb1BasicReadWrite()
 void TestDBD::testDb1VariousTypesRead()
 {
     // test read of various types that exist in db
-    DBTree *dbTree = new DBTree("tests/db-1", -1);
+    QString testSrcDir = QString("tests") + QDir::separator() + QString("db-1");
+    QString testDstDir = prepTestDB(testSrcDir);
+
+    qDebug() << "testing database copied to: " << testDstDir;
+
+    DBTree *dbTree = new DBTree(testDstDir, 0);
+
     Db *db = new Db(dbTree, false);
     new DbInterfaceAdaptor(db);
 
@@ -423,6 +483,21 @@ void TestDBD::testDbBasicInject()
     QCOMPARE(str, dumpstr);
     QCOMPARE(dumpval->toObject()->value("uuid")->toString(), QString("12345"));
     QCOMPARE(dumpval->toObject()->value("config")->toObject()->value("pae")->toString(), QString("false"));
+}
+
+
+void TestDBD::testDb2Inject()
+{
+    QString testSrcDir = QString("tests") + QDir::separator() + QString("db-2");
+    QString testDstDir = prepTestDB(testSrcDir);
+
+    qDebug() << "testing database copied to: " << testDstDir;
+
+    DBTree *dbTree = new DBTree(testDstDir, 1000);
+    Db *db = new Db(dbTree, false);
+    new DbInterfaceAdaptor(db);
+
+    QCOMPARE(db->exists(""), true);
 }
 
 QTEST_MAIN(TestDBD)

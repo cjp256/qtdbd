@@ -9,6 +9,8 @@ Q_OBJECT
 public:
     TestDBD();
     QStringList splitPath(QString path);
+    bool copyDirectory(const QString &srcPath, const QString &dstPath);
+    QString prepTestDB(const QString &dbPath);
 private slots:
     void testDbTreeBasicGetSet();
     void testDbBasicReadWrite();
@@ -19,6 +21,7 @@ private slots:
     void testDbBasicList();
     void testDbBasicRm();
     void testDbBasicInject();
+    void testDb2Inject();
 };
 
 #endif // TESTDBD_H
