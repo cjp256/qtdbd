@@ -7,7 +7,7 @@
 #include <QRegExp>
 #include <qmjson.h>
 
-DBTree::DBTree(QString dbPath, int maxFlushDelayMillis) : dbRoot(), maxFlushDelay(maxFlushDelayMillis), mainDb(nullptr), dbWriterThread(this)
+DBTree::DBTree(QString dbPath, int maxFlushDelayMillis) : dbRoot(), dbPath(dbPath), maxFlushDelay(maxFlushDelayMillis), mainDb(nullptr), dbWriterThread(this)
 {
     qDebug() << "DBTree init(" << dbPath << "," << maxFlushDelay << ")";
 
@@ -92,6 +92,55 @@ DBTree::~DBTree()
 {
 }
 
+QSharedPointer<SimpleJsonDB> DBTree::lookupDb(const QStringList &splitPath)
+{
+    if (splitPath.length() < 2) {
+        return mainDb;
+    }
+
+    QString topLevel = splitPath[0];
+    QString secondLevel = splitPath[1];
+
+    if (topLevel == "dom-store") {
+        QHash<QString, QSharedPointer<SimpleJsonDB>>::iterator i = domstoreDbs.find(secondLevel);
+        if (i != domstoreDbs.end() && i.key() == secondLevel) {
+            return i.value();
+        }
+
+        /* does not exist - create one */
+        QString filePath = dbPath + QDir::separator() + "dom-store" + QDir::separator() + secondLevel + ".db";
+        QString vPath = QString("/dom-store/") + secondLevel;
+        QStringList baseSplitPath;
+        baseSplitPath << topLevel << secondLevel;
+
+        qDebug() << "creating dom-store db for uuid:" << secondLevel << "at path:" << filePath;
+        auto db = QSharedPointer<SimpleJsonDB>(new SimpleJsonDB(vPath, filePath, maxFlushDelay));
+        domstoreDbs.insert(secondLevel, db);
+        setValue(baseSplitPath, db->getValue());
+        return db;
+    } else if (topLevel == "vm") {
+        QHash<QString, QSharedPointer<SimpleJsonDB>>::iterator i = vmsDbs.find(secondLevel);
+        if (i != vmsDbs.end() && i.key() == secondLevel) {
+            return i.value();
+        }
+
+        /* does not exist - create one */
+        QString filePath = dbPath + QDir::separator() + "vms" + QDir::separator() + secondLevel + ".db";
+        QString vPath = QString("/vm/") + secondLevel;
+        QStringList baseSplitPath;
+        baseSplitPath << topLevel << secondLevel;
+
+        qDebug() << "creating vm db for uuid:" << secondLevel << "at path:" << filePath;
+        auto db = QSharedPointer<SimpleJsonDB>(new SimpleJsonDB(vPath, filePath, maxFlushDelay));
+        vmsDbs.insert(secondLevel, db);
+        setValue(baseSplitPath, db->getValue());
+        return db;
+    }
+
+    // if not in domstore or vms db, must be in main db
+    return mainDb;
+}
+
 QMPointer<QMJsonValue> DBTree::getValue(const QStringList &splitPath)
 {
     QMPointer<QMJsonValue> obj = dbRoot;
@@ -130,6 +179,7 @@ QMPointer<QMJsonValue> DBTree::getValue(const QStringList &splitPath)
 void DBTree::setValue(const QStringList &splitPath, QMPointer<QMJsonValue> value)
 {
     QMPointer<QMJsonValue> obj = dbRoot;
+    auto db = lookupDb(splitPath);
 
     // if it is top of tree, ignore
     if (splitPath.length() == 0) {
@@ -162,12 +212,16 @@ void DBTree::setValue(const QStringList &splitPath, QMPointer<QMJsonValue> value
 
     qDebug() << "setValue() inserting value:" << value;
     obj->toObject()->insert(key, value);
+
+    /* notify db to flush */
+    db->queueFlush();
     return;
 }
 
 void DBTree::rmValue(const QStringList &splitPath)
 {
     QMPointer<QMJsonValue> obj = dbRoot;
+    auto db = lookupDb(splitPath);
 
     // if it is top of tree, ignore
     if (splitPath.length() == 0) {
@@ -198,11 +252,15 @@ void DBTree::rmValue(const QStringList &splitPath)
     }
 
     obj->toObject()->remove(key);
+
+    /* notify db to flush */
+    db->queueFlush();
 }
 
 void DBTree::mergeValue(const QStringList &splitPath, QMPointer<QMJsonValue> value)
 {
     QMPointer<QMJsonValue> obj = dbRoot;
+    auto db = lookupDb(splitPath);
 
     // if it is top of tree, ignore
     if (splitPath.length() == 0) {
@@ -233,4 +291,7 @@ void DBTree::mergeValue(const QStringList &splitPath, QMPointer<QMJsonValue> val
     qDebug() << "mergeValue(): attempting merge obj:" << obj << "value:" << value->toObject();
 
     obj->toObject()->unite(value->toObject(), QMJsonReplacementPolicy_Replace, QMJsonArrayUnitePolicy_Append);
+
+    /* notify db to flush */
+    db->queueFlush();
 }

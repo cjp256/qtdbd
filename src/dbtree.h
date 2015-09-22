@@ -14,6 +14,7 @@ class DBTree : public QObject
 public:
     DBTree(const QString dbPath = ":memory:", int maxFlushDelayMillis = 3000);
     ~DBTree();
+    QSharedPointer<SimpleJsonDB> lookupDb(const QStringList &splitPath);
     QMPointer<QMJsonValue> getValue(const QStringList &splitPath);
     void setValue(const QStringList &splitPath, QMPointer<QMJsonValue> value);
     void mergeValue(const QStringList &splitPath, QMPointer<QMJsonValue> value);

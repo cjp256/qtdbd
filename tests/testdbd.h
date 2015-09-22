@@ -22,6 +22,8 @@ private slots:
     void testDbBasicRm();
     void testDbBasicInject();
     void testDb2Inject();
+    void testDb2WriteVm();
+    void testDb2WriteDomstore();
 };
 
 #endif // TESTDBD_H

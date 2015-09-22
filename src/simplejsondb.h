@@ -25,7 +25,7 @@ public Q_SLOTS:
     void setMaxFlushDelay(int maxFlushDelayMillis);
     void setWorkerThread(QThread *workerThread);
     void flush();
-    void queueFlush(bool delayed);
+    void queueFlush();
 private:
     QMPointer<QMJsonValue> db;
     QString vpath;

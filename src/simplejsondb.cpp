@@ -1,4 +1,4 @@
-#include "simplejsondb.h"
+ #include "simplejsondb.h"
 #include <QTimer>
 #include <QMutex>
 #include <QFile>
@@ -79,22 +79,25 @@ void SimpleJsonDB::flush()
     } else {
         // save json file with atomic QSaveFile
         QSaveFile file(path);
-        file.open(QIODevice::WriteOnly | QIODevice::Text);
-        QTextStream outStream(&file);
-        outStream << jsonString;
-        file.commit();
+        if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+            qWarning() << "unable to write to db=" << path;
+        } else {
+            QTextStream outStream(&file);
+            outStream << jsonString;
+            file.commit();
+        }
     }
 
     fileLock.unlock();
 }
 
-void SimpleJsonDB::queueFlush(bool delayed)
+void SimpleJsonDB::queueFlush()
 {
-    if (!delayed) {
+    if (maxFlushDelay == 0) {
         return flush();
     }
 
-    if (!flushTimer.isActive()) {
+    if (maxFlushDelay > 0 && !flushTimer.isActive()) {
         flushTimer.start(maxFlushDelay);
     }
 }
