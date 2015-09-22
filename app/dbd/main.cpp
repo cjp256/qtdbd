@@ -136,5 +136,7 @@ int main(int argc, char *argv[])
     QDBusConnection::sessionBus().registerObject("/", "com.citrix.xenclient.db", db, QDBusConnection::ExportAllSlots);
 
     qDebug("registered and listening on dbus...");
+
+    qDebug() << dbTree->dbRoot->toJson();
     app.exec();
 }

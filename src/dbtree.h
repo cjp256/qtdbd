@@ -3,6 +3,8 @@
 
 #include <QObject>
 #include <QThread>
+#include <QHash>
+#include <QSharedPointer>
 #include <qmjson.h>
 #include "simplejsondb.h"
 
@@ -13,15 +15,17 @@ public:
     DBTree(const QString dbPath = ":memory:", int maxFlushDelayMillis = 3000);
     ~DBTree();
     QMPointer<QMJsonValue> getValue(const QStringList &splitPath);
-    void setValue(const QStringList &splitPath, const QString &value);
-    void mergeValue(const QStringList &splitPath, const QString &value);
+    void setValue(const QStringList &splitPath, QMPointer<QMJsonValue> value);
+    void mergeValue(const QStringList &splitPath, QMPointer<QMJsonValue> value);
     void rmValue(const QStringList &splitPath);
-private:
     QMPointer<QMJsonValue> dbRoot;
+private:
     QString dbPath;
     int maxFlushDelay;
     QSharedPointer<SimpleJsonDB> mainDb;
     QThread dbWriterThread;
+    QHash<QString, QSharedPointer<SimpleJsonDB>> vmsDbs;
+    QHash<QString, QSharedPointer<SimpleJsonDB>> domstoreDbs;
 signals:
 public slots:
 };

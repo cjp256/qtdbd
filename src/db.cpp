@@ -59,7 +59,7 @@ void Db::inject(const QString &path, const QString &value)
 
     QStringList split = path.split("/", QString::SplitBehavior::SkipEmptyParts);
 
-    dbTree->mergeValue(split, value);
+    dbTree->mergeValue(split, QMPointer<QMJsonValue>(QMJsonValue::fromJson(value)));
 }
 
 QStringList Db::list(const QString &path)
@@ -143,5 +143,5 @@ void Db::write(const QString &path, const QString &value)
 
     QStringList split = path.split("/", QString::SplitBehavior::SkipEmptyParts);
 
-    dbTree->setValue(split, value);
+    dbTree->setValue(split, QMPointer<QMJsonValue>(new QMJsonValue(value)));
 }

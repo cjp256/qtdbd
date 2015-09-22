@@ -4,6 +4,7 @@
 #include <QDebug>
 #include <QVariant>
 #include <QHash>
+#include <QRegExp>
 #include <qmjson.h>
 
 DBTree::DBTree(QString dbPath, int maxFlushDelayMillis) : dbRoot(), maxFlushDelay(maxFlushDelayMillis), mainDb(nullptr), dbWriterThread(this)
@@ -12,12 +13,79 @@ DBTree::DBTree(QString dbPath, int maxFlushDelayMillis) : dbRoot(), maxFlushDela
 
     if (dbPath == ":memory:") {
         mainDb = QSharedPointer<SimpleJsonDB>(new SimpleJsonDB(QString(""), QString(":memory:"), maxFlushDelayMillis));
+        mainDb->setFilterVmAndDomstoreKeys(true);
+        dbRoot = mainDb->getValue();
     } else {
-        mainDb = QSharedPointer<SimpleJsonDB>(new SimpleJsonDB(QString(""), QDir(dbPath).filePath("db"), maxFlushDelayMillis));
-    }
+        QDir topDir = QDir(dbPath);
+        QDir domstoreDir = QDir(dbPath + QDir::separator() + "dom-store");
+        QDir vmsDir = QDir(dbPath + QDir::separator() + "vms");
+        QStringList nameFilter;
 
-    mainDb->setFilterVmAndDomstoreKeys(true);
-    dbRoot = mainDb->getValue();
+        nameFilter << "*.db";
+
+        domstoreDir.setNameFilters(nameFilter);
+        domstoreDir.setFilter(QDir::Files);
+        vmsDir.setNameFilters(nameFilter);
+        vmsDir.setFilter(QDir::Files);
+
+        mainDb = QSharedPointer<SimpleJsonDB>(new SimpleJsonDB(QString(""), topDir.filePath("db"), maxFlushDelayMillis));
+        mainDb->setFilterVmAndDomstoreKeys(true);
+        dbRoot = mainDb->getValue();
+
+        // load children domstore nodes
+        QStringList entries = domstoreDir.entryList();
+        for( QStringList::ConstIterator entry=entries.begin(); entry!=entries.end(); ++entry )
+        {
+            QString fileName = *entry;
+            QString filePath = dbPath + QDir::separator() + "vms" + QDir::separator() + fileName;
+            qDebug() << "dom-store node: " << filePath;
+
+            QRegExp regex = QRegExp("[0-9a-f]{8}-([0-9a-f]{4}-){3}[0-9a-f]{12}.db");
+
+            if (!regex.exactMatch(fileName)) {
+                qDebug() << "ignoring invalid format dom-store db:" << filePath;
+                continue;
+            }
+
+            QString uuid = fileName.remove(36,3);
+            QString vPath = QString("/dom-store/") + uuid;
+            QStringList splitPath = vPath.split("/", QString::SplitBehavior::SkipEmptyParts);
+
+            qDebug() << "creating dom-store for uuid:" << uuid;
+
+            auto db = QSharedPointer<SimpleJsonDB>(new SimpleJsonDB(vPath, filePath, maxFlushDelayMillis));
+            domstoreDbs.insert(uuid, db);
+
+            setValue(splitPath, db->getValue());
+
+        }
+
+        entries = vmsDir.entryList();
+        for( QStringList::ConstIterator entry=entries.begin(); entry!=entries.end(); ++entry )
+        {
+            QString fileName = *entry;
+            QString filePath = dbPath + QDir::separator() + "vms" + QDir::separator() + fileName;
+            qDebug() << "vms node: " << filePath;
+
+            QRegExp regex = QRegExp("[0-9a-f]{8}-([0-9a-f]{4}-){3}[0-9a-f]{12}.db");
+
+            if (!regex.exactMatch(fileName)) {
+                qDebug() << "ignoring invalid format vms db:" << filePath;
+                continue;
+            }
+
+            QString uuid = fileName.remove(36,3);
+            QString vPath = QString("/vm/") + uuid;
+            QStringList splitPath = vPath.split("/", QString::SplitBehavior::SkipEmptyParts);
+
+            qDebug() << "creating vms for uuid:" << uuid;
+
+            auto db = QSharedPointer<SimpleJsonDB>(new SimpleJsonDB(vPath, filePath, maxFlushDelayMillis));
+            vmsDbs.insert(uuid, db);
+
+            setValue(splitPath, db->getValue());
+        }
+    }
 }
 
 DBTree::~DBTree()
@@ -59,7 +127,7 @@ QMPointer<QMJsonValue> DBTree::getValue(const QStringList &splitPath)
     return obj;
 }
 
-void DBTree::setValue(const QStringList &splitPath, const QString &value)
+void DBTree::setValue(const QStringList &splitPath, QMPointer<QMJsonValue> value)
 {
     QMPointer<QMJsonValue> obj = dbRoot;
 
@@ -75,12 +143,14 @@ void DBTree::setValue(const QStringList &splitPath, const QString &value)
 
     // make tree as required
     foreach (const QString &part, parentList) {
-        qDebug() << "setValue: part:" << part;
+        qDebug() << "setValue: part:" << part << "obj:" << obj;
 
         if (!obj->toObject()->contains(part)) {
+            qDebug() << "setValue() inserting empty object";
             obj->toObject()->insert(part, QMPointer<QMJsonObject>(new QMJsonObject()));
         }
 
+        qDebug() << "setValue() getting value";
         obj = obj->toObject()->value(part);
 
         // make sure next level is an object
@@ -90,7 +160,8 @@ void DBTree::setValue(const QStringList &splitPath, const QString &value)
         }
     }
 
-    obj->toObject()->insert(key, QMPointer<QMJsonValue>(new QMJsonValue(value)));
+    qDebug() << "setValue() inserting value:" << value;
+    obj->toObject()->insert(key, value);
     return;
 }
 
@@ -129,7 +200,7 @@ void DBTree::rmValue(const QStringList &splitPath)
     obj->toObject()->remove(key);
 }
 
-void DBTree::mergeValue(const QStringList &splitPath, const QString &value)
+void DBTree::mergeValue(const QStringList &splitPath, QMPointer<QMJsonValue> value)
 {
     QMPointer<QMJsonValue> obj = dbRoot;
 
@@ -159,9 +230,7 @@ void DBTree::mergeValue(const QStringList &splitPath, const QString &value)
         }
     }
 
-    auto mergeObj = QMPointer<QMJsonValue>(QMJsonValue::fromJson(value))->toObject();
-\
-    qDebug() << "mergeValue(): attempting merge obj=" << obj << "mergeObj=" << mergeObj;
+    qDebug() << "mergeValue(): attempting merge obj:" << obj << "value:" << value->toObject();
 
-    obj->toObject()->unite(mergeObj, QMJsonReplacementPolicy_Replace, QMJsonArrayUnitePolicy_Append);
+    obj->toObject()->unite(value->toObject(), QMJsonReplacementPolicy_Replace, QMJsonArrayUnitePolicy_Append);
 }
