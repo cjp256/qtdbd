@@ -705,5 +705,47 @@ void TestDBD::testDb2WriteDomstore()
     QCOMPARE(filestr, dumpstr);
 }
 
+void TestDBD::testDb2WriteDomstoreQueuedFlush()
+{
+    QString testSrcDir = QString("tests") + QDir::separator() + QString("db-2");
+    QString testDstDir = prepTestDB(testSrcDir);
+
+    qDebug() << "testing database copied to: " << testDstDir;
+
+    DBTree *dbTree = new DBTree(testDstDir, 1);
+    Db *db = new Db(dbTree, false);
+    new DbInterfaceAdaptor(db);
+
+    QCOMPARE(db->exists(""), true);
+
+    db->write("/dom-store/00000000-0000-0000-0000-000000000002/somekey", "somevalue");
+    QCOMPARE(db->exists("/dom-store/00000000-0000-0000-0000-000000000002/somekey"), true);
+    QCOMPARE(db->exists("dom-store/00000000-0000-0000-0000-000000000002/somekey"), true);
+
+    auto dumpval = QMJsonValue::fromJson(db->dump("/dom-store/00000000-0000-0000-0000-000000000002"));
+    auto dumpstr = dumpval->toJson(QMJsonFormat_Optimized, QMJsonSort_CaseSensitive);
+
+    QCOMPARE(QString("{\"somekey\":\"somevalue\"}"), dumpstr);
+    QCOMPARE(dumpval->toObject()->value("somekey")->toString(), QString("somevalue"));
+
+    QTest::qWait(500);
+    auto fileval = QMJsonValue::fromJsonFile(testDstDir + QDir::separator() + "dom-store" + QDir::separator() + "00000000-0000-0000-0000-000000000002.db");
+    auto filestr = fileval->toJson(QMJsonFormat_Optimized, QMJsonSort_CaseSensitive);
+    QCOMPARE(filestr, dumpstr);
+
+    // twiddle some bits
+    db->write("/dom-store/00000000-0000-0000-0000-000000000002/somekey", "12345");
+
+    QTest::qWait(500);
+    dumpval = QMJsonValue::fromJson(db->dump("/dom-store/00000000-0000-0000-0000-000000000002"));
+    dumpstr = dumpval->toJson(QMJsonFormat_Optimized, QMJsonSort_CaseSensitive);
+
+    QCOMPARE(QString("{\"somekey\":\"12345\"}"), dumpstr);
+    QCOMPARE(dumpval->toObject()->value("somekey")->toString(), QString("12345"));
+
+    fileval = QMJsonValue::fromJsonFile(testDstDir + QDir::separator() + "dom-store" + QDir::separator() + "00000000-0000-0000-0000-000000000002.db");
+    filestr = fileval->toJson(QMJsonFormat_Optimized, QMJsonSort_CaseSensitive);
+    QCOMPARE(filestr, dumpstr);
+}
 
 QTEST_MAIN(TestDBD)
