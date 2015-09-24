@@ -27,7 +27,6 @@ static  DBTree *dbTree = nullptr;
 
 void logOutput(QtMsgType type, const QMessageLogContext&, const QString& msg)
 {
-    /* TODO: honor syslog option */
     switch (type) {
     case QtDebugMsg:
         if (g_cmdLineOptions.debuggingEnabled) {

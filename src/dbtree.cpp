@@ -107,7 +107,7 @@ QSharedPointer<SimpleJsonDB> DBTree::lookupDb(const QStringList &splitPath)
             return i.value();
         }
 
-        /* does not exist - create one */
+        // does not exist - create one
         QString filePath = dbPath + QDir::separator() + "dom-store" + QDir::separator() + secondLevel + ".db";
         QString vPath = QString("/dom-store/") + secondLevel;
         QStringList baseSplitPath;
@@ -124,7 +124,7 @@ QSharedPointer<SimpleJsonDB> DBTree::lookupDb(const QStringList &splitPath)
             return i.value();
         }
 
-        /* does not exist - create one */
+        // does not exist - create one
         QString filePath = dbPath + QDir::separator() + "vms" + QDir::separator() + secondLevel + ".db";
         QString vPath = QString("/vm/") + secondLevel;
         QStringList baseSplitPath;
@@ -213,7 +213,7 @@ void DBTree::setValue(const QStringList &splitPath, QMPointer<QMJsonValue> value
     qDebug() << "setValue() inserting value:" << value;
     obj->toObject()->insert(key, value);
 
-    /* notify db to flush */
+    // notify db to flush
     db->queueFlush();
     return;
 }
@@ -253,7 +253,7 @@ void DBTree::rmValue(const QStringList &splitPath)
 
     obj->toObject()->remove(key);
 
-    /* notify db to flush */
+    // notify db to flush
     db->queueFlush();
 }
 
@@ -292,6 +292,6 @@ void DBTree::mergeValue(const QStringList &splitPath, QMPointer<QMJsonValue> val
 
     obj->toObject()->unite(value->toObject(), QMJsonReplacementPolicy_Replace, QMJsonArrayUnitePolicy_Append);
 
-    /* notify db to flush */
+    // notify db to flush
     db->queueFlush();
 }
