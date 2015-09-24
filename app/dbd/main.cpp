@@ -118,15 +118,20 @@ int main(int argc, char *argv[])
     QCoreApplication::setApplicationName("dbd");
     QCoreApplication::setApplicationVersion("3.0");
     QCommandLineParser parser;
+    QDBusConnection bus = QDBusConnection::sessionBus();
 
     parseCommandLine(parser, app, &g_cmdLineOptions);
 
-    if (!QDBusConnection::sessionBus().isConnected()) {
+    if (!g_cmdLineOptions.sessionBusEnabled) {
+        bus = QDBusConnection::systemBus();
+    }
+
+    if (!bus.isConnected()) {
         qFatal("failed to connect to dbus");
         exit(1);
     }
 
-    if (!QDBusConnection::sessionBus().registerService("com.citrix.xenclient.db")) {
+    if (!bus.registerService("com.citrix.xenclient.db")) {
         qFatal("failed to register service");
         exit(2);
     }
@@ -135,7 +140,7 @@ int main(int argc, char *argv[])
     Db *db = new Db(dbTree, g_cmdLineOptions.domidLookupEnabled);
     new DbInterfaceAdaptor(db);
 
-    QDBusConnection::sessionBus().registerObject("/", db, QDBusConnection::ExportAllSlots);
+    bus.registerObject("/", db, QDBusConnection::ExportAllSlots);
 
     qDebug("registered and listening on dbus...");
 
