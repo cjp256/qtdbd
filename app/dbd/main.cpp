@@ -8,10 +8,13 @@
 #include "db.h"
 #include "db_adaptor.h"
 #include "dbtree.h"
+#include <unistd.h>
+#include <syslog.h>
 
 typedef struct
 {
     bool debuggingEnabled;
+    bool foregroundEnabled;
     bool domidLookupEnabled;
     bool syslogEnabled;
     bool sessionBusEnabled;
@@ -28,22 +31,42 @@ void logOutput(QtMsgType type, const QMessageLogContext&, const QString& msg)
     switch (type) {
     case QtDebugMsg:
         if (g_cmdLineOptions.debuggingEnabled) {
-            fprintf(stderr, "Debug: %s\n", qPrintable(msg));
+            if (g_cmdLineOptions.syslogEnabled) {
+                syslog(LOG_DEBUG, "[DEBUG] %s\n", qPrintable(msg));
+            } else {
+                fprintf(stderr, "[DEBUG] %s\n", qPrintable(msg));
+            }
         }
         break;
 #if QT_VERSION >= 0x050500
     case QtInfoMsg:
-        fprintf(stderr, "Info: %s\n", qPrintable(msg));
+        if (g_cmdLineOptions.syslogEnabled) {
+            syslog(LOG_INFO, "[INFO] %s\n", qPrintable(msg));
+        } else {
+            fprintf(stderr, "[INFO] %s\n", qPrintable(msg));
+        }
         break;
 #endif
     case QtWarningMsg:
-        fprintf(stderr, "Warning: %s\n", qPrintable(msg));
+        if (g_cmdLineOptions.syslogEnabled) {
+            syslog(LOG_WARNING, "[WARNING] %s\n", qPrintable(msg));
+        } else {
+            fprintf(stderr, "[WARNING] %s\n", qPrintable(msg));
+        }
         break;
     case QtCriticalMsg:
-        fprintf(stderr, "Critical: %s\n", qPrintable(msg));
+        if (g_cmdLineOptions.syslogEnabled) {
+            syslog(LOG_CRIT, "[CRITICAL] %s\n", qPrintable(msg));
+        } else {
+            fprintf(stderr, "[CRITICAL] %s\n", qPrintable(msg));
+        }
         break;
     case QtFatalMsg:
-        fprintf(stderr, "Fatal: %s\n", qPrintable(msg));
+        if (g_cmdLineOptions.syslogEnabled) {
+            syslog(LOG_ALERT, "[FATAL] %s\n", qPrintable(msg));
+        } else {
+            fprintf(stderr, "[FATAL] %s\n", qPrintable(msg));
+        }
         abort();
     }
 }
@@ -52,6 +75,7 @@ void parseCommandLine(QCommandLineParser &parser, QCoreApplication &app, CmdLine
 {
     // set defaults
     opts->debuggingEnabled = false;
+    opts->foregroundEnabled = false;
     opts->domidLookupEnabled = false;
     opts->syslogEnabled = false;
     opts->sessionBusEnabled = false;
@@ -63,8 +87,12 @@ void parseCommandLine(QCommandLineParser &parser, QCoreApplication &app, CmdLine
     parser.addVersionOption();
 
     QCommandLineOption debugOption(QStringList() << "d" << "debug",
-            QCoreApplication::translate("main", "enable debug/verbose logging."));
+            QCoreApplication::translate("main", "enable debug/verbose logging"));
     parser.addOption(debugOption);
+
+    QCommandLineOption foregroundOption(QStringList() << "f" << "foreground",
+            QCoreApplication::translate("main", "run in foreground - do not fork"));
+    parser.addOption(foregroundOption);
 
     QCommandLineOption lookupDomIDOption(QStringList() << "l" << "lookup-domid",
             QCoreApplication::translate("main", "enable looking up sender domid using openxt specific call"));
@@ -91,6 +119,7 @@ void parseCommandLine(QCommandLineParser &parser, QCoreApplication &app, CmdLine
     parser.process(app);
 
     opts->debuggingEnabled = parser.isSet(debugOption);
+    opts->foregroundEnabled = parser.isSet(foregroundOption);
     opts->domidLookupEnabled = parser.isSet(lookupDomIDOption);
     opts->syslogEnabled = parser.isSet(syslogOption);
     opts->sessionBusEnabled = parser.isSet(sessionBusOption);
@@ -104,6 +133,7 @@ void parseCommandLine(QCommandLineParser &parser, QCoreApplication &app, CmdLine
     }
 
     qDebug("debugging enabled: %d", opts->debuggingEnabled);
+    qDebug("foreground enabled: %d", opts->foregroundEnabled);
     qDebug("domid lookup enabled: %d", opts->domidLookupEnabled);
     qDebug("syslog enabled: %d", opts->syslogEnabled);
     qDebug("session bus enabled: %d", opts->sessionBusEnabled);
@@ -121,6 +151,10 @@ int main(int argc, char *argv[])
     QDBusConnection bus = QDBusConnection::sessionBus();
 
     parseCommandLine(parser, app, &g_cmdLineOptions);
+
+    if (g_cmdLineOptions.syslogEnabled) {
+        openlog("dbd", LOG_PID, LOG_DAEMON);
+    }
 
     if (!g_cmdLineOptions.sessionBusEnabled) {
         bus = QDBusConnection::systemBus();
@@ -143,6 +177,10 @@ int main(int argc, char *argv[])
     bus.registerObject("/", db, QDBusConnection::ExportAllSlots);
 
     qDebug("registered and listening on dbus...");
+
+    if (!g_cmdLineOptions.foregroundEnabled) {
+        daemon(1, 0);
+    }
 
     qDebug() << dbTree->dbRoot->toJson();
     app.exec();
