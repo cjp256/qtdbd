@@ -12,6 +12,7 @@ class Db: public QObject,
           protected QDBusContext
 {
     Q_OBJECT
+    Q_CLASSINFO("D-Bus Interface", "com.citrix.xenclient.db")
 public:
     Db(DBTree *dbTree, bool lookupSenderId);
     ~Db();
