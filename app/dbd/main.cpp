@@ -31,9 +31,11 @@ void logOutput(QtMsgType type, const QMessageLogContext&, const QString& msg)
             fprintf(stderr, "Debug: %s\n", qPrintable(msg));
         }
         break;
+#if QT_VERSION >= 0x050500
     case QtInfoMsg:
         fprintf(stderr, "Info: %s\n", qPrintable(msg));
         break;
+#endif
     case QtWarningMsg:
         fprintf(stderr, "Warning: %s\n", qPrintable(msg));
         break;
@@ -133,7 +135,7 @@ int main(int argc, char *argv[])
     Db *db = new Db(dbTree, g_cmdLineOptions.domidLookupEnabled);
     new DbInterfaceAdaptor(db);
 
-    QDBusConnection::sessionBus().registerObject("/", "com.citrix.xenclient.db", db, QDBusConnection::ExportAllSlots);
+    QDBusConnection::sessionBus().registerObject("/", db, QDBusConnection::ExportAllSlots);
 
     qDebug("registered and listening on dbus...");
 
