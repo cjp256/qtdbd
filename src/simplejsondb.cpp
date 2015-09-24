@@ -6,7 +6,7 @@
 #include <QtDebug>
 #include <qmjson.h>
 
-SimpleJsonDB::SimpleJsonDB(const QString vpath, const QString path, int maxFlushDelayMillis) : db(), vpath(vpath), path(path), fileLock(), flushTimer(0), maxFlushDelay(maxFlushDelayMillis), skipDisk(false), filterVmAndDomstoreKeys(false)
+SimpleJsonDB::SimpleJsonDB(const QString vpath, const QString path, int maxFlushDelayMillis) : db(), vpath(vpath), path(path), writeLock(), flushTimer(0), maxFlushDelay(maxFlushDelayMillis), skipDisk(false), filterVmAndDomstoreKeys(false)
 {
     flushTimer.setSingleShot(true);
     QObject::connect(&flushTimer, &QTimer::timeout, this, &SimpleJsonDB::flush);
@@ -18,9 +18,23 @@ SimpleJsonDB::~SimpleJsonDB()
 {
 }
 
+void SimpleJsonDB::acquireWriteLock()
+{
+    writeLock.lock();
+}
+
+void SimpleJsonDB::releaseWriteLock()
+{
+    writeLock.unlock();
+}
+
 QString SimpleJsonDB::jsonString()
 {
-    return db->toJson();
+    acquireWriteLock();
+    QString dbString = db->toJson();
+    releaseWriteLock();
+
+    return dbString;
 }
 
 void SimpleJsonDB::setFilterVmAndDomstoreKeys(bool filter)
@@ -45,7 +59,7 @@ QMPointer<QMJsonValue> SimpleJsonDB::getValue()
 
 void SimpleJsonDB::readFromDisk()
 {
-    fileLock.lock();
+    acquireWriteLock();
 
     if (path != ":memory:") {
         db = QMJsonValue::fromJsonFile(path);
@@ -57,22 +71,20 @@ void SimpleJsonDB::readFromDisk()
         db = QMPointer<QMJsonValue>(new QMJsonValue(obj));
     }
 
-    fileLock.unlock();
+    releaseWriteLock();
 }
 
 void SimpleJsonDB::flush()
 {
-    QString jsonString = db->toJson();
-
     // skip flush if delay is -1
     if (maxFlushDelay == -1 || path == ":memory:") {
-        qDebug() << "skipping flush for:" << jsonString;
+        qDebug() << "skipping flush for:" << jsonString();
         return;
     }
 
-    fileLock.lock();
+    QString dbString = jsonString();
 
-    if (jsonString.size() <= 0) {
+    if (dbString.size() <= 0) {
         // db is empty, remove old db file (if it exists)
         QFile file(path);
         file.remove();
@@ -83,12 +95,10 @@ void SimpleJsonDB::flush()
             qWarning() << "unable to write to db=" << path;
         } else {
             QTextStream outStream(&file);
-            outStream << jsonString;
+            outStream << dbString;
             file.commit();
         }
     }
-
-    fileLock.unlock();
 }
 
 void SimpleJsonDB::queueFlush()

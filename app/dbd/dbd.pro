@@ -16,3 +16,6 @@ SOURCES += main.cpp
 LIBS += -L../../src -ldb -lqmjson
 
 PRE_TARGETDEPS += ../../src/libdb.a
+
+target.path = /usr/sbin
+INSTALLS += target

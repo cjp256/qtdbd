@@ -21,6 +21,8 @@ public Q_SLOTS:
     QString jsonString();
     QMPointer<QMJsonValue> getValue();
     void readFromDisk();
+    void acquireWriteLock();
+    void releaseWriteLock();
     void setFilterVmAndDomstoreKeys(bool filter);
     void setMaxFlushDelay(int maxFlushDelayMillis);
     void setWorkerThread(QThread *workerThread);
@@ -30,7 +32,7 @@ private:
     QMPointer<QMJsonValue> db;
     QString vpath;
     QString path;
-    QMutex fileLock;
+    QMutex writeLock;
     QTimer flushTimer;
     int maxFlushDelay;
     bool skipDisk;
