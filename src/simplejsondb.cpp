@@ -65,7 +65,7 @@ void SimpleJsonDB::flush()
     QString jsonString = db->toJson();
 
     // skip flush if delay is -1
-    if (maxFlushDelay == -1) {
+    if (maxFlushDelay == -1 || path == ":memory:") {
         qDebug() << "skipping flush for:" << jsonString;
         return;
     }
