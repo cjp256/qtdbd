@@ -17,3 +17,6 @@ HEADERS += testdbd.h
 LIBS += -L../src -ldb -lqmjson
 
 PRE_TARGETDEPS += ../src/libdb.a
+
+target.path = /usr/bin
+INSTALLS += target
