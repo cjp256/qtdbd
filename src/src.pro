@@ -16,10 +16,12 @@ SOURCES += \
     db_adaptor.cpp \
     db.cpp \
     simplejsondb.cpp \
-    dbtree.cpp
+    dbtree.cpp \
+    db_proxy.cpp
 
 HEADERS += \
     db_adaptor.h \
     db.h \
     simplejsondb.h \
-    dbtree.h
+    dbtree.h \
+    db_proxy.h
