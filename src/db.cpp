@@ -21,10 +21,20 @@ Db::~Db()
 
 QString Db::getSenderId()
 {
+    QString senderId = message().service();
     if (lookupSenderId) {
-        return message().service();
+        QDBusInterface iface("org.freedesktop.DBus", "/org/freedesktop/DBus", "org.freedesktop.DBus", QDBusConnection::systemBus());
+        if (iface.isValid()) {
+           QDBusReply<QString> reply = iface.call("GetConnectionDOMID", senderId);
+           if (reply.isValid()) {
+               return reply.value();
+           }
+
+           qWarning() << "failed to read sender domid for sender id:" << senderId;
+           return QString();
+        }
     } else {
-        return "";
+        return senderId;
     }
 }
 
