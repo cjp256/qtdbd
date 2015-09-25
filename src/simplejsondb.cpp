@@ -92,7 +92,7 @@ void SimpleJsonDB::flush()
         // save json file with atomic QSaveFile
         QSaveFile file(path);
         if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
-            qWarning() << "unable to write to db=" << path;
+            qWarning() << "unable to write to db:" << path;
         } else {
             QTextStream outStream(&file);
             outStream << dbString;

@@ -145,7 +145,7 @@ QMPointer<QMJsonValue> DBTree::getValue(const QStringList &splitPath)
 {
     QMPointer<QMJsonValue> obj = dbRoot;
 
-    qDebug() << "getValue(): db = " << obj->toJson();
+    qDebug() << "getValue(): splitPath:" << splitPath;
 
     // if it is top of tree, return the whole tree
     if (splitPath.length() == 0) {
@@ -153,26 +153,28 @@ QMPointer<QMJsonValue> DBTree::getValue(const QStringList &splitPath)
     }
 
     // traverse tree parts
+    QStringList currentSplitPath;
     foreach (const QString &part, splitPath) {
-        qDebug() << "getValue: part:" << part << "obj:" << obj << "type:" << obj->type();
+        currentSplitPath << part;
+        qDebug() << "getValue: currentSplitPath:" << currentSplitPath << "type:" << obj->type();
 
         // make sure next level is an object
         if (!obj->isObject()) {
-            qDebug() << "getValue() failed to traverse path:" << obj;
+            qDebug() << "getValue() failed to traverse path:" << currentSplitPath;
             return QMPointer<QMJsonValue>();
         }
 
         if (!obj->toObject()->contains(part)) {
-            qDebug() << "getValue() failed to traverse next path:" << obj;
+            qDebug() << "getValue() failed to traverse next path:" << currentSplitPath;
             return QMPointer<QMJsonValue>();
         }
 
         obj = obj->toObject()->value(part);
 
-        qDebug() << "getValue: next object:" << obj;
+        qDebug() << "getValue: next object";
     }
 
-    qDebug() << "getValue: returning object:" << obj;
+    qDebug() << "getValue: returning object";
     return obj;
 }
 
@@ -190,12 +192,13 @@ void DBTree::setValue(const QStringList &splitPath, QMPointer<QMJsonValue> value
     // split key from parent path values
     QStringList parentList(splitPath);
     QString key = parentList.takeLast();
-    QStringList currentSplitPath;
-    auto currentDb = mainDb;
 
     // make tree as required
+    QStringList currentSplitPath;
+    auto currentDb = mainDb;
     foreach (const QString &part, parentList) {
-        qDebug() << "setValue: part:" << part << "obj:" << obj;
+        currentSplitPath << part;
+        qDebug() << "setValue: currentSplitPath:" << currentSplitPath << "type:" << obj->type();
 
         if (!obj->toObject()->contains(part)) {
             qDebug() << "setValue() inserting empty object";
@@ -209,11 +212,10 @@ void DBTree::setValue(const QStringList &splitPath, QMPointer<QMJsonValue> value
 
         // make sure next level is an object
         if (!obj->isObject()) {
-            qDebug() << "setValue() failed to traverse path:" << obj;
+            qDebug() << "setValue() failed to traverse path:" << currentSplitPath << "type:" << obj->type();
             return;
         }
 
-        currentSplitPath << part;
         currentDb = lookupDb(currentSplitPath);
     }
 
@@ -244,8 +246,10 @@ void DBTree::rmValue(const QStringList &splitPath)
     QString key = parentList.takeLast();
 
     // iterate through parent objects
+    QStringList currentSplitPath;
     foreach (const QString &part, parentList) {
-        qDebug() << "rmValue: part:" << part;
+        currentSplitPath << part;
+        qDebug() << "rmValue: currentSplitPath:" << currentSplitPath << "type:" << obj->type();
 
         // bail if parent doesn't exist
         if (!obj->toObject()->contains(part)) {
@@ -256,7 +260,7 @@ void DBTree::rmValue(const QStringList &splitPath)
 
         // bail if next level is not an object
         if (!obj->isObject()) {
-            qDebug() << "rmValue() failed to traverse path:" << obj;
+            qDebug() << "rmValue() failed to traverse path:" << currentSplitPath << "type:" << obj->type();
             return;
         }
     }
@@ -283,8 +287,10 @@ void DBTree::mergeValue(const QStringList &splitPath, QMPointer<QMJsonValue> val
     QStringList parentList(splitPath);
 
     // iterate through parent objects
+    QStringList currentSplitPath;
     foreach (const QString &part, parentList) {
-        qDebug() << "mergeValue: part:" << part;
+        currentSplitPath << part;
+        qDebug() << "mergeValue: currentSplitPath:" << currentSplitPath << "type:" << obj->type();
 
         // create missing children nodes
         if (!obj->toObject()->contains(part)) {
@@ -295,7 +301,7 @@ void DBTree::mergeValue(const QStringList &splitPath, QMPointer<QMJsonValue> val
 
         // bail if next level is not an object
         if (!obj->isObject()) {
-            qDebug() << "mergeValue() failed to traverse path:" << obj;
+            qDebug() << "mergeValue() failed to traverse path:" << currentSplitPath << "type:" << obj->type();
             return;
         }
     }

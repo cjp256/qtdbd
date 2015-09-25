@@ -69,7 +69,7 @@ QStringList Db::list(const QString &path)
     QStringList split = path.split("/", QString::SplitBehavior::SkipEmptyParts);
     QMPointer<QMJsonValue> value = dbTree->getValue(split);
 
-    if (!value->isObject()) {
+    if (value.isNull() || !value->isObject()) {
         return QStringList();
     }
 
