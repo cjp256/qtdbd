@@ -170,8 +170,6 @@ QMPointer<QMJsonValue> DBTree::getValue(const QStringList &splitPath)
         }
 
         obj = obj->toObject()->value(part);
-
-        qDebug() << "getValue: next object";
     }
 
     qDebug() << "getValue: returning object";

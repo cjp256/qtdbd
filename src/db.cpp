@@ -88,8 +88,6 @@ QString Db::read(const QString &path)
         return "";
     }
 
-    qDebug() << "value=" << value << " toJson=" << value->toJson() << "type=" << value->type() << "toString=" << value->toString();
-
     if (value->isBool()) {
         if (value->toBool()) {
             return "true";
@@ -114,7 +112,7 @@ QString Db::read(const QString &path)
         return "null";
     }
 
-    qWarning("read(): invalid value type!");
+    qWarning() << "read(): invalid value type!" << value;
     return "";
 }
 

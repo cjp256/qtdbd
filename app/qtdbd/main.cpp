@@ -131,13 +131,13 @@ void parseCommandLine(QCommandLineParser &parser, QCoreApplication &app, CmdLine
         opts->dbBaseDirectoryPath = parser.value(dbDirectoryOption);
     }
 
-    qDebug("debugging enabled: %d", opts->debuggingEnabled);
-    qDebug("foreground enabled: %d", opts->foregroundEnabled);
-    qDebug("domid lookup enabled: %d", opts->domidLookupEnabled);
-    qDebug("syslog enabled: %d", opts->syslogEnabled);
-    qDebug("session bus enabled: %d", opts->sessionBusEnabled);
-    qDebug("max delay millis: %d", opts->dbMaxDelayMillis);
-    qDebug("db base directory path: %s", qPrintable(opts->dbBaseDirectoryPath));
+    qDebug() << "debugging enabled:" << opts->debuggingEnabled;
+    qDebug() << "foreground enabled:" << opts->foregroundEnabled;
+    qDebug() << "domid lookup enabled:" << opts->domidLookupEnabled;
+    qDebug() << "syslog enabled:" << opts->syslogEnabled;
+    qDebug() << "session bus enabled:" << opts->sessionBusEnabled;
+    qDebug() << "max delay millis:" << opts->dbMaxDelayMillis;
+    qDebug() << "db base directory path:" << opts->dbBaseDirectoryPath;
 }
 
 int main(int argc, char *argv[])
@@ -175,7 +175,7 @@ int main(int argc, char *argv[])
 
     bus.registerObject("/", db, QDBusConnection::ExportAllSlots);
 
-    qDebug("registered and listening on dbus...");
+    qDebug() << "registered and listening on dbus...";
 
     if (!g_cmdLineOptions.foregroundEnabled) {
         daemon(1, 0);
