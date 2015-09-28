@@ -71,7 +71,7 @@ QString Db::getUuidFromDomId(int domid)
         }
     }
 
-    QString vmPathQS = "/local/domain/" + QString(domid) + "/vm";
+    QString vmPathQS = "/local/domain/" + QString::number(domid) + "/vm";
     QByteArray pba = vmPathQS.toLatin1();
     const char *cpa = pba.data();
     qDebug() << "performing xs_read for:" << cpa;
