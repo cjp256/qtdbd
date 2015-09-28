@@ -75,8 +75,8 @@ void parseCommandLine(QCommandLineParser &parser, QCoreApplication &app, CmdLine
     // set defaults
     opts->debuggingEnabled = false;
     opts->foregroundEnabled = false;
-    opts->domidLookupEnabled = false;
-    opts->syslogEnabled = false;
+    opts->domidLookupEnabled = true;
+    opts->syslogEnabled = true;
     opts->sessionBusEnabled = false;
     opts->dbMaxDelayMillis = 3000;
     opts->dbBaseDirectoryPath = QString("/config");
