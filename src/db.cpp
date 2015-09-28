@@ -25,7 +25,7 @@ QString Db::getSenderId()
     if (lookupSenderId) {
         QDBusInterface iface("org.freedesktop.DBus", "/org/freedesktop/DBus", "org.freedesktop.DBus", QDBusConnection::systemBus());
         if (iface.isValid()) {
-            QDBusPendingReply<int> reply = iface.asyncCall("GetConnectionDOMID");
+            QDBusPendingReply<int> reply = iface.asyncCall("GetConnectionDOMID", senderId);
             reply.waitForFinished();
             if (reply.isValid()) {
                 return QString(reply.value());
