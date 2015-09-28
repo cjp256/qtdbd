@@ -13,7 +13,7 @@ LIBS += -lqmjson
 
 SOURCES += main.cpp
 
-LIBS += -L../../src -ldb -lqmjson
+LIBS += -L../../src -ldb -lqmjson -lxenstore
 
 PRE_TARGETDEPS += ../../src/libdb.a
 

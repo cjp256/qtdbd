@@ -16,7 +16,12 @@ class Db: public QObject,
 public:
     Db(DBTree *dbTree, bool lookupSenderId);
     ~Db();
-    QString getSenderId();
+
+    const QString getSenderId();
+    int getSenderDomId();
+    QString getUuidFromDomId(int domid);
+    bool senderPathSplit(QString path, QStringList &splitPathOut);
+
 public: // PROPERTIES
 public Q_SLOTS: // METHODS
     QString dump(const QString &path);
