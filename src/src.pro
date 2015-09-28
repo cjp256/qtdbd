@@ -10,7 +10,7 @@ CONFIG += static
 
 TEMPLATE = lib
 
-LIBS += -lqmjson
+LIBS += -lqmjson -lxenstore
 
 SOURCES += \
     db_adaptor.cpp \

@@ -11,7 +11,8 @@
 
 Db::Db(DBTree *dbTree, bool lookupSenderId) : dbTree(dbTree), lookupSenderId(lookupSenderId)
 {
-
+    // try opening xenstore handle so it's available for later use
+    xs = xs_daemon_open();
 }
 
 Db::~Db()
@@ -59,7 +60,43 @@ QString Db::getUuidFromDomId(int domid)
     // # The UUID is actually in the vm_path, but this is the old way...
     // uuid = self.xenstore.read(0, vm_path + '/uuid')
 
-    return QString();
+    xs_transaction_t th;
+    unsigned int len;
+
+    if (xs == NULL) {
+        xs = xs_daemon_open();
+        if (xs == NULL) {
+            qWarning() << "unable to open xenstore";
+            return QString();
+        }
+    }
+
+    QString vmPathQS = "/local/domain/" + QString(domid) + "/vm";
+    QByteArray pba = vmPathQS.toLatin1();
+    const char *cpa = pba.data();
+    th = xs_transaction_start(xs);
+    const char *uuidPath = (const char *)xs_read(xs, th, cpa, &len);
+    xs_transaction_end(xs, th, false);
+
+    if (len <= 0) {
+        qWarning() << "unable to read vm path from xenstore for:" << vmPathQS;
+        return QString();
+    }
+
+    QString uuidPathQS = QString(uuidPath) + "/uuid";
+    pba = uuidPathQS.toLatin1();
+    cpa = pba.data();
+
+    th = xs_transaction_start(xs);
+    const char *uuid = (const char *)xs_read(xs, th, cpa, &len);
+    xs_transaction_end(xs, th, false);
+
+    if (len <= 0) {
+        qWarning() << "unable to read uuid from xenstore for:" << uuidPathQS;
+        return QString();
+    }
+
+    return QString(uuid);
 }
 
 bool Db::senderPathSplit(QString path, QStringList &splitPath)

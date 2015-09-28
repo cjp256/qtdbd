@@ -8,6 +8,11 @@
 #include "dbtree.h"
 #include <qmjson.h>
 
+extern "C"
+{
+#include <xenstore.h>
+}
+
 class Db: public QObject,
           protected QDBusContext
 {
@@ -36,6 +41,7 @@ Q_SIGNALS: // SIGNALS
 private:
     DBTree *dbTree;
     bool lookupSenderId;
+    struct xs_handle *xs;
 };
 
 #endif // DB_H
