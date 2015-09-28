@@ -37,7 +37,7 @@ DBTree::DBTree(QString dbPath, int maxFlushDelayMillis) : dbRoot(), dbPath(dbPat
         for( QStringList::ConstIterator entry=entries.begin(); entry!=entries.end(); ++entry )
         {
             QString fileName = *entry;
-            QString filePath = dbPath + QDir::separator() + "vms" + QDir::separator() + fileName;
+            QString filePath = dbPath + QDir::separator() + "dom-store" + QDir::separator() + fileName;
             qDebug() << "dom-store node: " << filePath;
 
             QRegExp regex = QRegExp("[0-9a-f]{8}-([0-9a-f]{4}-){3}[0-9a-f]{12}.db");
