@@ -25,17 +25,18 @@ QString Db::getSenderId()
     if (lookupSenderId) {
         QDBusInterface iface("org.freedesktop.DBus", "/org/freedesktop/DBus", "org.freedesktop.DBus", QDBusConnection::systemBus());
         if (iface.isValid()) {
-           QDBusReply<QString> reply = iface.call("GetConnectionDOMID", senderId);
-           if (reply.isValid()) {
-               return reply.value();
-           }
+            QDBusPendingReply<int> reply = iface.asyncCall("GetConnectionDOMID");
+            reply.waitForFinished();
+            if (reply.isValid()) {
+                return QString(reply.value());
+            }
 
-           qWarning() << "failed to read sender domid for sender id:" << senderId << "error:" << reply.error().name();
-           return QString();
+            qWarning() << "failed to read sender domid for sender id:" << senderId << "error:" << reply.error().name();
+            return QString();
         }
-    } else {
-        return senderId;
     }
+
+    return senderId;
 }
 
 QString Db::dump(const QString &path)
