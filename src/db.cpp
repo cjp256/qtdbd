@@ -30,7 +30,7 @@ QString Db::getSenderId()
                return reply.value();
            }
 
-           qWarning() << "failed to read sender domid for sender id:" << senderId;
+           qWarning() << "failed to read sender domid for sender id:" << senderId << "error:" << reply.error().name();
            return QString();
         }
     } else {
