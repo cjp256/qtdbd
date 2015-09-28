@@ -74,6 +74,8 @@ QString Db::getUuidFromDomId(int domid)
     QString vmPathQS = "/local/domain/" + QString(domid) + "/vm";
     QByteArray pba = vmPathQS.toLatin1();
     const char *cpa = pba.data();
+    qDebug() << "performing xs_read for:" << cpa;
+
     th = xs_transaction_start(xs);
     const char *uuidPath = (const char *)xs_read(xs, th, cpa, &len);
     xs_transaction_end(xs, th, false);
@@ -83,9 +85,12 @@ QString Db::getUuidFromDomId(int domid)
         return QString();
     }
 
+    qDebug() << "xs_read for:" << cpa << "returned:" << uuidPath;
+
     QString uuidPathQS = QString(uuidPath) + "/uuid";
     pba = uuidPathQS.toLatin1();
     cpa = pba.data();
+    qDebug() << "performing xs_read for:" << cpa;
 
     th = xs_transaction_start(xs);
     const char *uuid = (const char *)xs_read(xs, th, cpa, &len);
@@ -95,6 +100,8 @@ QString Db::getUuidFromDomId(int domid)
         qWarning() << "unable to read uuid from xenstore for:" << uuidPathQS;
         return QString();
     }
+
+    qDebug() << "xs_read for:" << cpa << "returned:" << uuid;
 
     return QString(uuid);
 }
