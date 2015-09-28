@@ -1,7 +1,7 @@
 TEMPLATE = subdirs
 CONFIG += ordered
 SUBDIRS = \
-    qtdbd \
+    dbd \
     db-cat \
     db-dump \
     db-exists \
@@ -12,7 +12,7 @@ SUBDIRS = \
     db-rm \
     db-write
 
-qtdbd.depends = src
+dbd.depends = src
 db-cat.depends = src
 db-dump.depends = src
 db-exists.depends = src
