@@ -56,10 +56,6 @@ int Db::getSenderDomId()
 
 QString Db::getUuidFromDomId(int domid)
 {
-    // vm_path = self.xenstore.read(0, '/local/domain/' + str(domid) + '/vm')
-    // # The UUID is actually in the vm_path, but this is the old way...
-    // uuid = self.xenstore.read(0, vm_path + '/uuid')
-
     xs_transaction_t th;
     unsigned int len;
 

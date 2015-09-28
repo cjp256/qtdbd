@@ -11,6 +11,7 @@
 #include <unistd.h>
 #include <syslog.h>
 #include <db_proxy.h>
+#include <qmjson.h>
 
 typedef struct
 {
@@ -112,51 +113,49 @@ void parseCommandLine(QCommandLineParser &parser, QCoreApplication &app, CmdLine
     qDebug() << "key:" << opts->key;
 }
 
-// Compatibility glue for insane dump (ala db-ls)
-//void lsObject(QMPointer<QMJsonValue)
-//def dump(obj, path):
-//    key_name = ""
-//    for elem in path.split("/"):
-//        if len(elem) > 0:
-//            key_name = elem
-//            break
 
-//    outstr = []
-//    def __path_dump_level(outstr, key_name, obj, level):
-//        # handle the invalid key case
-//        if obj == 'null':
-//            outstr.append("%s%s = \"\"" % (" " * level, key_name))
-//            return
+// Insane stringify (aka db-ls)
+void lsObject(QMPointer<QMJsonValue> value, QStringList &outStringList, QString key, int level)
+{
+    QString out;
 
-//        # simple key value
-//        if isinstance(obj, basestring) or isinstance(obj, bool):
-//            outstr.append("%s%s = \"%s\"" % (" " * level, key_name, str(obj)))
-//            return
+    if (value->isNull()) {
+        out = QString(level, QChar(' ')) + key + " = null";
+        outStringList.append(out);
+        return;
+    }
 
-//        # iterate over dicts
-//        if isinstance(obj, dict):
-//            outstr.append("%s%s =" % (" " * level, key_name))
-//            for k, v in obj.iteritems():
-//                __path_dump_level(outstr, k, v, level + 1)
+    if (value->isBool()) {
+        //outstr.append("%s%s = \"%s\"" % (" " * level, key_name, str(obj)))
+        if (value->toBool()) {
+            out = QString(level, QChar(' ')) + key + " = \"true\"";
+        } else {
+            out = QString(level, QChar(' ')) + key + " = \"false\"";
+        }
+        outStringList.append(out);
+        return;
+    }
 
-//    __path_dump_level(outstr, key_name, obj, 0)
-//    return "\n".join(outstr)
+    if (value->isString()) {
+        out = QString(level, QChar(' ')) + key + " = \"" + value->toString() + "\"";
+        outStringList.append(out);
+        return;
+    }
 
-//def main():
-//    if len(sys.argv) < 2:
-//        key = "/"
-//    else:
-//        key = sys.argv[1]
+    if (value->isDouble()) {
+        out = QString(level, QChar(' ')) + key + " = \"" + QString::number(value->toDouble()) + "\"";
+        outStringList.append(out);
+        return;
+    }
 
-//    bus = dbus.SystemBus()
-//    dbd = bus.get_object('com.citrix.xenclient.db', '/')
-//    iface = dbus.Interface(dbd, 'com.citrix.xenclient.db')
-//    data = iface.dump(key)
-//    obj = json.loads(data)
-//    out = dump(obj, key)
-//    print("%s" % (out))
-
-
+    if (value->isObject()) {
+        out = QString(level, QChar(' ')) + key + " =";
+        outStringList.append(out);
+        for (const auto &subKey : value->toObject()->keys()) {
+            lsObject(value->toObject()->value(subKey), outStringList, subKey, level + 1);
+        }
+    }
+}
 
 int main(int argc, char *argv[])
 {
@@ -183,7 +182,7 @@ int main(int argc, char *argv[])
     }
 
     auto dbClient = new ComCitrixXenclientDbInterface("com.citrix.xenclient.db", "/", bus, &app);
-    auto reply = dbClient->read(g_cmdLineOptions.key);
+    auto reply = dbClient->dump(g_cmdLineOptions.key);
 
     // wait until the dbus reply is ready
     reply.waitForFinished();
@@ -194,6 +193,18 @@ int main(int argc, char *argv[])
         exit(1);
     }
 
-    QTextStream(stdout) << reply.value() << endl;
+    QMPointer<QMJsonValue> value = QMJsonValue::fromJson(reply.value());
+
+    QStringList outStringList;
+    QString key = QString("");
+    QStringList splitPath = g_cmdLineOptions.key.split("/", QString::SplitBehavior::SkipEmptyParts);
+
+    if (splitPath.length() > 0) {
+        key = splitPath.last();
+    }
+
+    lsObject(value, outStringList, key, 0);
+
+    QTextStream(stdout) << outStringList.join("\n") << endl;
     return 0;
 }

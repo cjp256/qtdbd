@@ -12,7 +12,7 @@ TEMPLATE = app
 
 SOURCES += main.cpp
 
-LIBS += -L../../src -ldb
+LIBS += -L../../src -ldb -lqmjson
 
 PRE_TARGETDEPS += ../../src/libdb.a
 
