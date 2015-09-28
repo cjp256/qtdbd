@@ -17,5 +17,5 @@ LIBS += -L../../src -ldb -lqmjson -lxenstore
 
 PRE_TARGETDEPS += ../../src/libdb.a
 
-target.path = /usr/sbin
+target.path = /usr/bin
 INSTALLS += target
