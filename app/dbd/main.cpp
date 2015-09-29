@@ -16,8 +16,8 @@ typedef struct
 {
     bool debuggingEnabled;
     bool foregroundEnabled;
-    bool domidLookupEnabled;
-    bool syslogEnabled;
+    bool skipDomidLookupEnabled;
+    bool consoleLoggingEnabled;
     bool sessionBusEnabled;
     int dbMaxDelayMillis;
     QString dbBaseDirectoryPath;
@@ -31,7 +31,7 @@ void logOutput(QtMsgType type, const QMessageLogContext&, const QString& msg)
     switch (type) {
     case QtDebugMsg:
         if (g_cmdLineOptions.debuggingEnabled) {
-            if (g_cmdLineOptions.syslogEnabled) {
+            if (!g_cmdLineOptions.consoleLoggingEnabled) {
                 syslog(LOG_DEBUG, "[DEBUG] %s\n", qPrintable(msg));
             } else {
                 fprintf(stderr, "[DEBUG] %s\n", qPrintable(msg));
@@ -40,7 +40,7 @@ void logOutput(QtMsgType type, const QMessageLogContext&, const QString& msg)
         break;
 #if QT_VERSION >= 0x050500
     case QtInfoMsg:
-        if (g_cmdLineOptions.syslogEnabled) {
+        if (!g_cmdLineOptions.consoleLoggingEnabled) {
             syslog(LOG_INFO, "[INFO] %s\n", qPrintable(msg));
         } else {
             fprintf(stderr, "[INFO] %s\n", qPrintable(msg));
@@ -48,21 +48,21 @@ void logOutput(QtMsgType type, const QMessageLogContext&, const QString& msg)
         break;
 #endif
     case QtWarningMsg:
-        if (g_cmdLineOptions.syslogEnabled) {
+        if (!g_cmdLineOptions.consoleLoggingEnabled) {
             syslog(LOG_WARNING, "[WARNING] %s\n", qPrintable(msg));
         } else {
             fprintf(stderr, "[WARNING] %s\n", qPrintable(msg));
         }
         break;
     case QtCriticalMsg:
-        if (g_cmdLineOptions.syslogEnabled) {
+        if (!g_cmdLineOptions.consoleLoggingEnabled) {
             syslog(LOG_CRIT, "[CRITICAL] %s\n", qPrintable(msg));
         } else {
             fprintf(stderr, "[CRITICAL] %s\n", qPrintable(msg));
         }
         break;
     case QtFatalMsg:
-        if (g_cmdLineOptions.syslogEnabled) {
+        if (!g_cmdLineOptions.consoleLoggingEnabled) {
             syslog(LOG_ALERT, "[FATAL] %s\n", qPrintable(msg));
         } else {
             fprintf(stderr, "[FATAL] %s\n", qPrintable(msg));
@@ -84,8 +84,8 @@ void parseCommandLine(QCommandLineParser &parser, QCoreApplication &app, CmdLine
     // set defaults
     opts->debuggingEnabled = false;
     opts->foregroundEnabled = false;
-    opts->domidLookupEnabled = true;
-    opts->syslogEnabled = true;
+    opts->skipDomidLookupEnabled = false;
+    opts->consoleLoggingEnabled = false;
     opts->sessionBusEnabled = false;
     opts->dbMaxDelayMillis = 3000;
     opts->dbBaseDirectoryPath = QString("/config");
@@ -102,13 +102,13 @@ void parseCommandLine(QCommandLineParser &parser, QCoreApplication &app, CmdLine
             QCoreApplication::translate("main", "run in foreground - do not fork"));
     parser.addOption(foregroundOption);
 
-    QCommandLineOption lookupDomIDOption(QStringList() << "l" << "lookup-domid",
-            QCoreApplication::translate("main", "enable looking up sender domid using openxt specific call"));
-    parser.addOption(lookupDomIDOption);
+    QCommandLineOption skipLookupDomIDOption(QStringList() << "s" << "skip-domid-lookup",
+            QCoreApplication::translate("main", "skip looking up sender domid using openxt specific call"));
+    parser.addOption(skipLookupDomIDOption);
 
-    QCommandLineOption syslogOption(QStringList() << "s" << "syslog",
-            QCoreApplication::translate("main", "enable logging via syslog"));
-    parser.addOption(syslogOption);
+    QCommandLineOption consoleLogOption(QStringList() << "c" << "console-logging",
+            QCoreApplication::translate("main", "use console logging instead of syslog"));
+    parser.addOption(consoleLogOption);
 
     QCommandLineOption sessionBusOption(QStringList() << "x" << "use-session-bus",
             QCoreApplication::translate("main", "use session bus instead of system bus (useful for testing)"));
@@ -128,8 +128,8 @@ void parseCommandLine(QCommandLineParser &parser, QCoreApplication &app, CmdLine
 
     opts->debuggingEnabled = parser.isSet(debugOption);
     opts->foregroundEnabled = parser.isSet(foregroundOption);
-    opts->domidLookupEnabled = parser.isSet(lookupDomIDOption);
-    opts->syslogEnabled = parser.isSet(syslogOption);
+    opts->skipDomidLookupEnabled = parser.isSet(skipLookupDomIDOption);
+    opts->consoleLoggingEnabled = parser.isSet(consoleLogOption);
     opts->sessionBusEnabled = parser.isSet(sessionBusOption);
 
     if (parser.isSet(maxDbFlushTimeOption)) {
@@ -142,8 +142,8 @@ void parseCommandLine(QCommandLineParser &parser, QCoreApplication &app, CmdLine
 
     qDebug() << "debugging enabled:" << opts->debuggingEnabled;
     qDebug() << "foreground enabled:" << opts->foregroundEnabled;
-    qDebug() << "domid lookup enabled:" << opts->domidLookupEnabled;
-    qDebug() << "syslog enabled:" << opts->syslogEnabled;
+    qDebug() << "skip domid lookup enabled:" << opts->skipDomidLookupEnabled;
+    qDebug() << "console logging enabled:" << opts->consoleLoggingEnabled;
     qDebug() << "session bus enabled:" << opts->sessionBusEnabled;
     qDebug() << "max delay millis:" << opts->dbMaxDelayMillis;
     qDebug() << "db base directory path:" << opts->dbBaseDirectoryPath;
@@ -166,7 +166,7 @@ int main(int argc, char *argv[])
 
     parseCommandLine(parser, app, &g_cmdLineOptions);
 
-    if (g_cmdLineOptions.syslogEnabled) {
+    if (!g_cmdLineOptions.consoleLoggingEnabled) {
         openlog("dbd", LOG_PID, LOG_DAEMON);
     }
 
@@ -185,7 +185,7 @@ int main(int argc, char *argv[])
     }
 
     dbTree = new DBTree(g_cmdLineOptions.dbBaseDirectoryPath, g_cmdLineOptions.dbMaxDelayMillis);
-    Db *db = new Db(dbTree, g_cmdLineOptions.domidLookupEnabled);
+    Db *db = new Db(dbTree, !g_cmdLineOptions.skipDomidLookupEnabled);
     new DbInterfaceAdaptor(db);
 
     bus.registerObject("/", db, QDBusConnection::ExportAllSlots);
