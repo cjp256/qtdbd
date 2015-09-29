@@ -57,25 +57,36 @@ QMPointer<QMJsonValue> SimpleJsonDB::getValue()
     return db;
 }
 
+QString SimpleJsonDB::getPath()
+{
+    return path;
+}
+
 void SimpleJsonDB::readFromDisk()
 {
     acquireWriteLock();
 
     if (path != ":memory:") {
         db = QMJsonValue::fromJsonFile(path);
+        qDebug() << "db from json file:" << db;
     }
 
     // if no json file exists, create empty object
-    if (db.isNull()) {
+    // XXX: fix desired https://github.com/QtMark/qmjson/issues/9
+    if (db->isNull()) {
+        qInfo() << "failed to read db:" << path << "malformed?";
         auto obj = QMPointer<QMJsonObject>(new QMJsonObject());
         db = QMPointer<QMJsonValue>(new QMJsonValue(obj));
     }
 
+    qInfo() << "read db:" << path << "value:" << db;
     releaseWriteLock();
 }
 
 void SimpleJsonDB::flush()
 {
+    qDebug() << "flush for db:" << path;
+
     // skip flush if delay is -1
     if (maxFlushDelay == -1 || path == ":memory:") {
         qDebug() << "skipping flush for:" << jsonString();
@@ -98,16 +109,28 @@ void SimpleJsonDB::flush()
             outStream << dbString;
             file.commit();
         }
+        qInfo() << "flushed db:" << path;
     }
 }
 
 void SimpleJsonDB::queueFlush()
 {
     if (maxFlushDelay == 0) {
+        qDebug() << "immediate flush for db:" << path;
         return flush();
     }
 
     if (maxFlushDelay > 0 && !flushTimer.isActive()) {
+        qDebug() << "queue flush for db:" << path;
         flushTimer.start(maxFlushDelay);
+    }
+}
+
+void SimpleJsonDB::forcePendingFlush()
+{
+    if (flushTimer.isActive()) {
+        qDebug() << "force active pending flush for db:" << path;
+        flushTimer.stop();
+        flush();
     }
 }

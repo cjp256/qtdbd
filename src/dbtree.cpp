@@ -56,7 +56,7 @@ DBTree::DBTree(QString dbPath, int maxFlushDelayMillis) : dbRoot(), dbPath(dbPat
             auto db = QSharedPointer<SimpleJsonDB>(new SimpleJsonDB(vPath, filePath, maxFlushDelayMillis));
             domstoreDbs.insert(uuid, db);
 
-            setValue(splitPath, db->getValue());
+            setValue(splitPath, db->getValue(), true);
 
         }
 
@@ -83,7 +83,7 @@ DBTree::DBTree(QString dbPath, int maxFlushDelayMillis) : dbRoot(), dbPath(dbPat
             auto db = QSharedPointer<SimpleJsonDB>(new SimpleJsonDB(vPath, filePath, maxFlushDelayMillis));
             vmsDbs.insert(uuid, db);
 
-            setValue(splitPath, db->getValue());
+            setValue(splitPath, db->getValue(), true);
         }
     }
 }
@@ -116,7 +116,7 @@ QSharedPointer<SimpleJsonDB> DBTree::lookupDb(const QStringList &splitPath)
         qDebug() << "creating dom-store db for uuid:" << secondLevel << "at path:" << filePath;
         auto db = QSharedPointer<SimpleJsonDB>(new SimpleJsonDB(vPath, filePath, maxFlushDelay));
         domstoreDbs.insert(secondLevel, db);
-        setValue(baseSplitPath, db->getValue());
+        setValue(baseSplitPath, db->getValue(), true);
         return db;
     } else if (topLevel == "vm") {
         QHash<QString, QSharedPointer<SimpleJsonDB>>::iterator i = vmsDbs.find(secondLevel);
@@ -133,7 +133,7 @@ QSharedPointer<SimpleJsonDB> DBTree::lookupDb(const QStringList &splitPath)
         qDebug() << "creating vm db for uuid:" << secondLevel << "at path:" << filePath;
         auto db = QSharedPointer<SimpleJsonDB>(new SimpleJsonDB(vPath, filePath, maxFlushDelay));
         vmsDbs.insert(secondLevel, db);
-        setValue(baseSplitPath, db->getValue());
+        setValue(baseSplitPath, db->getValue(), true);
         return db;
     }
 
@@ -176,7 +176,7 @@ QMPointer<QMJsonValue> DBTree::getValue(const QStringList &splitPath)
     return obj;
 }
 
-void DBTree::setValue(const QStringList &splitPath, QMPointer<QMJsonValue> value)
+void DBTree::setValue(const QStringList &splitPath, QMPointer<QMJsonValue> value, bool skipFlush)
 {
     QMPointer<QMJsonValue> obj = dbRoot;
     auto db = lookupDb(splitPath);
@@ -224,7 +224,9 @@ void DBTree::setValue(const QStringList &splitPath, QMPointer<QMJsonValue> value
     currentDb->releaseWriteLock();
 
     // notify db to flush
-    db->queueFlush();
+    if (!skipFlush) {
+        db->queueFlush();
+    }
     return;
 }
 
@@ -312,4 +314,21 @@ void DBTree::mergeValue(const QStringList &splitPath, QMPointer<QMJsonValue> val
 
     // notify db to flush
     db->queueFlush();
+}
+
+void DBTree::exitCleanup()
+{
+    qDebug() << "exiting...";
+
+    mainDb->forcePendingFlush();
+
+    foreach (auto db, vmsDbs) {
+        db->forcePendingFlush();
+    }
+
+    foreach (auto db, domstoreDbs) {
+        db->forcePendingFlush();
+    }
+
+    qDebug() << "buh bye";
 }

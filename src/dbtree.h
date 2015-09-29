@@ -16,7 +16,7 @@ public:
     ~DBTree();
     QSharedPointer<SimpleJsonDB> lookupDb(const QStringList &splitPath);
     QMPointer<QMJsonValue> getValue(const QStringList &splitPath);
-    void setValue(const QStringList &splitPath, QMPointer<QMJsonValue> value);
+    void setValue(const QStringList &splitPath, QMPointer<QMJsonValue> value, bool skipFlush=false);
     void mergeValue(const QStringList &splitPath, QMPointer<QMJsonValue> value);
     void rmValue(const QStringList &splitPath);
     QMPointer<QMJsonValue> dbRoot;
@@ -29,6 +29,8 @@ private:
     QHash<QString, QSharedPointer<SimpleJsonDB>> domstoreDbs;
 signals:
 public slots:
+public Q_SLOTS: // METHODS
+    void exitCleanup();
 };
 
 #endif // DBTREE_H

@@ -10,6 +10,7 @@
 #include "dbtree.h"
 #include <unistd.h>
 #include <syslog.h>
+#include <signal.h>
 
 typedef struct
 {
@@ -68,6 +69,12 @@ void logOutput(QtMsgType type, const QMessageLogContext&, const QString& msg)
         }
         abort();
     }
+}
+
+void exitHandler(int signal)
+{
+    qInfo() << "signal to quit received:" << signal;
+    QCoreApplication::quit();
 }
 
 void parseCommandLine(QCommandLineParser &parser, QCoreApplication &app, CmdLineOptions *opts)
@@ -149,6 +156,12 @@ int main(int argc, char *argv[])
     QCommandLineParser parser;
     QDBusConnection bus = QDBusConnection::sessionBus();
 
+    // setup exit handler
+    signal(SIGQUIT, exitHandler);
+    signal(SIGINT, exitHandler);
+    signal(SIGTERM, exitHandler);
+    signal(SIGHUP, exitHandler);
+
     parseCommandLine(parser, app, &g_cmdLineOptions);
 
     if (g_cmdLineOptions.syslogEnabled) {
@@ -182,5 +195,7 @@ int main(int argc, char *argv[])
     }
 
     qDebug() << dbTree->dbRoot->toJson();
+
+    QObject::connect(&app, SIGNAL(aboutToQuit()), dbTree, SLOT(exitCleanup()));
     app.exec();
 }

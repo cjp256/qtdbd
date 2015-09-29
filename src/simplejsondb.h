@@ -20,6 +20,7 @@ public:
 public Q_SLOTS:
     QString jsonString();
     QMPointer<QMJsonValue> getValue();
+    QString getPath();
     void readFromDisk();
     void acquireWriteLock();
     void releaseWriteLock();
@@ -28,6 +29,7 @@ public Q_SLOTS:
     void setWorkerThread(QThread *workerThread);
     void flush();
     void queueFlush();
+    void forcePendingFlush();
 private:
     QMPointer<QMJsonValue> db;
     QString vpath;
