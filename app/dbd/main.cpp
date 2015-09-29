@@ -73,7 +73,9 @@ void logOutput(QtMsgType type, const QMessageLogContext&, const QString& msg)
 
 void exitHandler(int signal)
 {
+#if QT_VERSION >= 0x050500
     qInfo() << "signal to quit received:" << signal;
+#endif
     QCoreApplication::quit();
 }
 

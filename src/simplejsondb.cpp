@@ -74,12 +74,16 @@ void SimpleJsonDB::readFromDisk()
     // if no json file exists, create empty object
     // XXX: fix desired https://github.com/QtMark/qmjson/issues/9
     if (db.isNull() || db->isNull()) {
+#if QT_VERSION >= 0x050500
         qInfo() << "failed to read db:" << path << "malformed?";
+#endif
         auto obj = QMPointer<QMJsonObject>(new QMJsonObject());
         db = QMPointer<QMJsonValue>(new QMJsonValue(obj));
     }
 
+#if QT_VERSION >= 0x050500
     qInfo() << "read db:" << path << "value:" << db;
+#endif
     releaseWriteLock();
 }
 
@@ -109,7 +113,9 @@ void SimpleJsonDB::flush()
             outStream << dbString;
             file.commit();
         }
+#if QT_VERSION >= 0x050500
         qInfo() << "flushed db:" << path;
+#endif
     }
 }
 
