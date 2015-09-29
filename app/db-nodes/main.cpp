@@ -73,6 +73,7 @@ void parseCommandLine(QCommandLineParser &parser, QCoreApplication &app, CmdLine
     opts->debuggingEnabled = false;
     opts->syslogEnabled = false;
     opts->sessionBusEnabled = false;
+    opts->key = QString("/");
 
     parser.setApplicationDescription("openxt simple db storage daemon");
     parser.addHelpOption();
@@ -99,12 +100,9 @@ void parseCommandLine(QCommandLineParser &parser, QCoreApplication &app, CmdLine
     opts->sessionBusEnabled = parser.isSet(sessionBusOption);
 
     const QStringList posArgs = parser.positionalArguments();
-    if (posArgs.size() < 1) {
-        qWarning() << "invalid arguments";
-        exit(1);
+    if (posArgs.size() >= 1) {
+        opts->key = posArgs.at(0);
     }
-
-    opts->key = posArgs.at(0);
 
     qDebug() << "debugging enabled:" << opts->debuggingEnabled;
     qDebug() << "syslog enabled:" << opts->syslogEnabled;
