@@ -32,6 +32,13 @@ QString SimpleJsonDB::jsonString()
 {
     acquireWriteLock();
     QString dbString = db->toJson();
+
+    if (filterVmAndDomstoreKeys) {
+        auto filteredValue = QMJsonValue::fromJson(dbString);
+        filteredValue->toObject()->remove("vm");
+        filteredValue->toObject()->remove("dom-store");
+        dbString = filteredValue->toJson();
+    }
     releaseWriteLock();
 
     return dbString;
@@ -73,7 +80,7 @@ void SimpleJsonDB::readFromDisk()
 
     // if no json file exists, create empty object
     // XXX: fix desired https://github.com/QtMark/qmjson/issues/9
-    if (db.isNull() || db->isNull()) {
+    if (db.isNull()) {
 #if QT_VERSION >= 0x050500
         qInfo() << "failed to read db:" << path << "malformed?";
 #endif
