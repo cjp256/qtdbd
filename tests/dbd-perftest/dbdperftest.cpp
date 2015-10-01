@@ -1,31 +1,34 @@
 #include "dbdperftest.h"
 
-DbdPerfTest::DbdPerfTest(QCoreApplication *app) : app(app), parser(), readInterval(10), writeInterval(1000), readIterations(100000), numberVms(25), printTimer(), elapsedTimer(), reader(), writer()
+DbdPerfTest::DbdPerfTest(QCoreApplication *app) : app(app), parser(), readInterval(10), writeInterval(1000), readIterations(100000), numberVms(25), printTimer(), elapsedTimer(), reader(NULL), writer(NULL)
 {
 }
 
 DbdPerfTest::~DbdPerfTest()
 {
-
 }
 
 void DbdPerfTest::exitCleanup()
 {
     qDebug() << "exiting...";
+    readerThread->quit();
+    writerThread->quit();
+    readerThread->wait();
+    writerThread->wait();
     printSummary();
 }
 
 void DbdPerfTest::printSummary()
 {
-    reader.updateLock->lock();
-    auto readSuccess = reader.readSuccessCount;
-    auto readError = reader.readErrorCount;
-    reader.updateLock->unlock();
+    reader->updateLock.lock();
+    auto readSuccess = reader->readSuccessCount;
+    auto readError = reader->readErrorCount;
+    reader->updateLock.unlock();
 
-    writer.updateLock->lock();
-    auto writeSuccess = writer.writeSuccessCount;
-    auto writeError = writer.writeErrorCount;
-    writer.updateLock->unlock();
+    writer->updateLock.lock();
+    auto writeSuccess = writer->writeSuccessCount;
+    auto writeError = writer->writeErrorCount;
+    writer->updateLock.unlock();
 
     auto elapsed = elapsedTimer.elapsed();
 
@@ -101,14 +104,36 @@ void DbdPerfTest::startTests()
     elapsedTimer.start();
     printTimer.start();
 
-    reader.readInterval = readInterval;
-    reader.readIterations = readIterations;
-    writer.writeInterval = writeInterval;
+    readerThread = new QThread();
+    writerThread = new QThread();
 
-    reader.moveToThread(&reader);
-    reader.start();
-    writer.moveToThread(&writer);
-    writer.start();
+    reader = new DbdPerfTestReader();
+    writer = new DbdPerfTestWriter();
+
+    reader->readInterval = readInterval;
+    reader->readIterations = readIterations;
+    writer->writeInterval = writeInterval;
+
+    reader->moveToThread(readerThread);
+    writer->moveToThread(writerThread);
+
+    connect(readerThread, &QThread::started, reader, &DbdPerfTestReader::setup);
+    connect(writerThread, &QThread::started, writer, &DbdPerfTestWriter::setup);
+
+    connect(readerThread, &QThread::finished, reader, &QObject::deleteLater);
+    connect(writerThread, &QThread::finished, writer, &QObject::deleteLater);
+
+    connect(reader, &DbdPerfTestReader::finished, reader, &QObject::deleteLater);
+    connect(writer, &DbdPerfTestWriter::finished, writer, &QObject::deleteLater);
+
+    connect(reader, &DbdPerfTestReader::finished, readerThread, &QThread::quit);
+    connect(writer, &DbdPerfTestWriter::finished, writerThread, &QThread::quit);
+
+    connect(app, &QCoreApplication::aboutToQuit, reader, &DbdPerfTestReader::stop);
+    connect(app, &QCoreApplication::aboutToQuit, writer, &DbdPerfTestWriter::stop);
+
+    readerThread->start();
+    writerThread->start();
 
     qDebug() << "tests started...";
 }

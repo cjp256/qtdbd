@@ -12,11 +12,11 @@
 
 
 
-class DbdPerfTestReader: public QThread
+class DbdPerfTestReader: public QObject
 {
     Q_OBJECT
 public:
-    DbdPerfTestReader() : readInterval(1.0), readIterations(1000), readTimer(NULL), updateLock(NULL), readSuccessCount(0), readErrorCount(0), dbClient(NULL)
+    DbdPerfTestReader() : running(false), readInterval(1.0), readIterations(1000), readTimer(this), updateLock(), readSuccessCount(0), readErrorCount(0), dbClient(NULL)
     {
     }
 
@@ -25,6 +25,29 @@ public:
     }
 
 public slots:
+    void setup()
+    {
+        if (!QDBusConnection::systemBus().isConnected()) {
+            qFatal("failed to connect to dbus");
+            exit(1);
+        }
+
+        dbClient = new ComCitrixXenclientDbInterface("com.citrix.xenclient.db", "/", QDBusConnection::systemBus(), this);
+
+        // write known test key to be read in later
+        dbClient->write(QString("key"), QString("value"));
+
+        readTimer.setInterval(readInterval);
+        QObject::connect(&readTimer, &QTimer::timeout, this, &DbdPerfTestReader::performRead, Qt::DirectConnection);
+        readTimer.start();
+    }
+
+    void stop()
+    {
+        running = false;
+        readTimer.stop();
+        emit finished();
+    }
 
     void performRead()
     {
@@ -35,66 +58,49 @@ public slots:
 
         // if it's valid, print it
         if (!reply.isValid()) {
-            updateLock->lock();
+            updateLock.lock();
             readErrorCount += 1;
-            updateLock->unlock();
+            updateLock.unlock();
             return;
         }
 
         if (reply.value() == QString("value")) {
-            updateLock->lock();
+            updateLock.lock();
             readSuccessCount += 1;
-            updateLock->unlock();
+            updateLock.unlock();
         } else {
             qDebug() << "reading bad (valid) value??" << reply.value();
-            updateLock->lock();
+            updateLock.lock();
             readErrorCount += 1;
-            updateLock->unlock();
+            updateLock.unlock();
         }
 
         if (readIterations <= (readSuccessCount + readErrorCount)) {
             // time to exit
+            emit finished();
             QCoreApplication::quit();
         }
     }
 
-    void run()
-    {
-        if (!QDBusConnection::systemBus().isConnected()) {
-            qFatal("failed to connect to dbus");
-            exit(1);
-        }
-
-        updateLock = new QMutex();
-        dbClient = new ComCitrixXenclientDbInterface("com.citrix.xenclient.db", "/", QDBusConnection::systemBus(), this);
-
-        // write known test key to be read in later
-        dbClient->write(QString("key"), QString("value"));
-
-        readTimer = new QTimer(this);
-        readTimer->setInterval(readInterval);
-        QObject::connect(readTimer, &QTimer::timeout, this, &DbdPerfTestReader::performRead, Qt::DirectConnection);
-        readTimer->moveToThread(this);
-        readTimer->start();
-        exec();
-    }
-
 public:
+    bool running;
     double readInterval;
     qulonglong readIterations;
-    QTimer *readTimer;
-    QMutex *updateLock;
+    QTimer readTimer;
+    QMutex updateLock;
     qulonglong readSuccessCount;
     qulonglong readErrorCount;
     ComCitrixXenclientDbInterface *dbClient;
+
 Q_SIGNALS:
+    void finished();
 };
 
-class DbdPerfTestWriter: public QThread
+class DbdPerfTestWriter: public QObject
 {
     Q_OBJECT
 public:
-    DbdPerfTestWriter() : writeInterval(1.0), writeTimer(NULL), updateLock(NULL), writeSuccessCount(0), writeErrorCount(0), dbClient(NULL)
+    DbdPerfTestWriter() : running(false), writeInterval(1.0), writeTimer(this), updateLock(), writeSuccessCount(0), writeErrorCount(0), dbClient(NULL)
     {
     }
 
@@ -103,6 +109,27 @@ public:
     }
 
 public slots:
+    void setup()
+    {
+        if (!QDBusConnection::systemBus().isConnected()) {
+            qFatal("failed to connect to dbus");
+            exit(1);
+        }
+
+        dbClient = new ComCitrixXenclientDbInterface("com.citrix.xenclient.db", "/", QDBusConnection::systemBus(), this);
+
+        //writeTimer.moveToThread(&thread);
+        writeTimer.setInterval(writeInterval);
+        QObject::connect(&writeTimer, &QTimer::timeout, this, &DbdPerfTestWriter::performWrite, Qt::DirectConnection);
+        writeTimer.start();
+    }
+
+    void stop()
+    {
+        running = false;
+        writeTimer.stop();
+        emit finished();
+    }
 
     void performWrite()
     {
@@ -113,42 +140,27 @@ public slots:
 
         // if it's valid, print it
         if (!reply.isValid()) {
-            updateLock->lock();
+            updateLock.lock();
             writeErrorCount += 1;
-            updateLock->unlock();
+            updateLock.unlock();
         } else {
-            updateLock->lock();
+            updateLock.lock();
             writeSuccessCount += 1;
-            updateLock->unlock();
+            updateLock.unlock();
         }
-    }
-
-    void run()
-    {
-        if (!QDBusConnection::systemBus().isConnected()) {
-            qFatal("failed to connect to dbus");
-            exit(1);
-        }
-
-        dbClient = new ComCitrixXenclientDbInterface("com.citrix.xenclient.db", "/", QDBusConnection::systemBus(), this);
-
-        updateLock = new QMutex();
-        writeTimer = new QTimer(this);
-        writeTimer->setInterval(writeInterval);
-        QObject::connect(writeTimer, &QTimer::timeout, this, &DbdPerfTestWriter::performWrite, Qt::DirectConnection);
-        writeTimer->moveToThread(this);
-        writeTimer->start();
-        exec();
     }
 
 public:
+    bool running;
     double writeInterval;
-    QTimer *writeTimer;
-    QMutex *updateLock;
+    QTimer writeTimer;
+    QMutex updateLock;
     qulonglong writeSuccessCount;
     qulonglong writeErrorCount;
     ComCitrixXenclientDbInterface *dbClient;
+
 Q_SIGNALS:
+    void finished();
 };
 
 class DbdPerfTest: public QObject
@@ -171,8 +183,10 @@ private:
     qulonglong numberVms;
     QTimer printTimer;
     QElapsedTimer elapsedTimer;
-    DbdPerfTestReader reader;
-    DbdPerfTestWriter writer;
+    QThread *readerThread;
+    DbdPerfTestReader *reader;
+    QThread *writerThread;
+    DbdPerfTestWriter *writer;
 Q_SIGNALS:
 };
 #endif // DBDPERFTEST_H
