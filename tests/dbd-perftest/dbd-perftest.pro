@@ -10,9 +10,13 @@ CONFIG -= app_bundle
 
 TEMPLATE = app
 
-HEADERS += dbdperftest.h
+HEADERS += dbdperftest.h \
+    dbdperftestreader.h \
+    dbdperftestwriter.h
 SOURCES += main.cpp \
-    dbdperftest.cpp
+    dbdperftest.cpp \
+    dbdperftestreader.cpp \
+    dbdperftestwriter.cpp
 
 LIBS += -L../../src -ldb -lqmjson -lxenstore
 
