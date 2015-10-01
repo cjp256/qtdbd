@@ -1,1 +1,1 @@
-# qtdbd - openxt db replacement
+# qtdbd - openxt compatible db replacement
