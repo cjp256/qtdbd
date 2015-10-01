@@ -14,7 +14,7 @@ before_install:
 
 install:
 - sudo apt-get update
-- sudo apt-get install build-essential
+- sudo apt-get install build-essential libxen-dev
 - if [ "$QT_BASE" = "54" ]; then sudo apt-get install qt54base; source /opt/qt54/bin/qt54-env.sh; fi
 - if [ "$QT_BASE" = "55" ]; then sudo apt-get install qt55base; source /opt/qt55/bin/qt55-env.sh; fi
 - git clone git://github.com/qtmark/qmjson.git
