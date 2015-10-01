@@ -8,7 +8,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "db.h"
-#include "db_adaptor.h"
+#include "dbinterfaceadaptor.h"
 #include "dbtree.h"
 #include <unistd.h>
 #include <syslog.h>

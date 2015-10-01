@@ -8,7 +8,7 @@
 #include <QTimer>
 #include <QThread>
 #include <QElapsedTimer>
-#include <db_proxy.h>
+#include <comcitrixxenclientdbinterface.h>
 #include <dbdperftestreader.h>
 #include <dbdperftestwriter.h>
 

@@ -7,7 +7,7 @@
 #include <QtDBus/QtDBus>
 #include <QTimer>
 #include <QThread>
-#include <db_proxy.h>
+#include <comcitrixxenclientdbinterface.h>
 
 class DbdPerfTestReader: public QObject
 {

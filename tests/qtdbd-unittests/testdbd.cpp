@@ -1,7 +1,7 @@
 
 #include "testdbd.h"
 #include "db.h"
-#include "db_adaptor.h"
+#include "dbinterfaceadaptor.h"
 
 #include <QTemporaryDir>
 #include <QtTest/QtTest>

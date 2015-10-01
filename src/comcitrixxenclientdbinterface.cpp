@@ -9,7 +9,7 @@
  * before re-generating it.
  */
 
-#include "db_proxy.h"
+#include "comcitrixxenclientdbinterface.h"
 
 /*
  * Implementation of interface class ComCitrixXenclientDbInterface
