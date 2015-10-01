@@ -10,7 +10,7 @@
 
 extern "C"
 {
-#include <xenstore.h>
+#include <xs.h>
 }
 
 class Db: public QObject,
