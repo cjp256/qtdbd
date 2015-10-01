@@ -76,7 +76,7 @@ QString Db::getUuidFromDomId(int domid)
     const char *uuidPath = (const char *)xs_read(xs, th, cpa, &len);
     xs_transaction_end(xs, th, false);
 
-    if (len <= 0) {
+    if (uuid == NULL || len == 0) {
         qWarning() << "unable to read vm path from xenstore for:" << vmPathQS;
         return QString();
     }
@@ -92,7 +92,7 @@ QString Db::getUuidFromDomId(int domid)
     const char *uuid = (const char *)xs_read(xs, th, cpa, &len);
     xs_transaction_end(xs, th, false);
 
-    if (len <= 0) {
+    if (uuid == NULL || len == 0) {
         qWarning() << "unable to read uuid from xenstore for:" << uuidPathQS;
         return QString();
     }

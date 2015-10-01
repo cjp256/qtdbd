@@ -1,6 +1,6 @@
 #include "dbdperftest.h"
 
-DbdPerfTest::DbdPerfTest(QCoreApplication *app) : app(app), parser(), readInterval(10), writeInterval(1000), readIterations(100000), numberVms(25), printTimer(), elapsedTimer(), reader(NULL), writer(NULL)
+DbdPerfTest::DbdPerfTest(QCoreApplication *app) : app(app), parser(), readInterval(10), writeInterval(1000), readIterations(100000), numberVms(25), printTimer(), elapsedTimer(), reader(NULL), readerThread(NULL), writer(NULL), writerThread(NULL)
 {
 }
 
