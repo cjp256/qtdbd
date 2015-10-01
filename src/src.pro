@@ -1,7 +1,7 @@
 include(../defaults.pri)
 
 QT += core
-QT += gui
+QT -= gui
 QT += dbus
 
 TARGET = db
