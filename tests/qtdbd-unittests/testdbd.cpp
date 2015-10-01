@@ -26,7 +26,7 @@ bool TestDBD::copyDirectory(const QString &srcPath, const QString &dstPath)
     qDebug() << "copying: " << srcDir.absoluteFilePath(".") << " to: " << dstDir.absoluteFilePath(".");
 
     // make sure specified destination directory is created
-    if (!dstDir.exists()){
+    if (!dstDir.exists()) {
         dstDir.mkpath(".");
     }
 

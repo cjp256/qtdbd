@@ -14,7 +14,7 @@ extern "C"
 }
 
 class Db: public QObject,
-          protected QDBusContext
+    protected QDBusContext
 {
     Q_OBJECT
     Q_CLASSINFO("D-Bus Interface", "com.citrix.xenclient.db")

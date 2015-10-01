@@ -28,7 +28,9 @@ class ComCitrixXenclientDbInterface: public QDBusAbstractInterface
     Q_OBJECT
 public:
     static inline const char *staticInterfaceName()
-    { return "com.citrix.xenclient.db"; }
+    {
+        return "com.citrix.xenclient.db";
+    }
 
 public:
     ComCitrixXenclientDbInterface(const QString &service, const QString &path, const QDBusConnection &connection, QObject *parent = 0);
@@ -96,10 +98,10 @@ Q_SIGNALS: // SIGNALS
 };
 
 namespace com {
-  namespace citrix {
-    namespace xenclient {
-      typedef ::ComCitrixXenclientDbInterface db;
-    }
-  }
+namespace citrix {
+namespace xenclient {
+typedef ::ComCitrixXenclientDbInterface db;
+}
+}
 }
 #endif

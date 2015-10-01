@@ -49,27 +49,27 @@ void DbdPerfTest::parseCommandLine()
     parser.addVersionOption();
 
     QCommandLineOption readIntervalOption(QStringList() << "r" << "read-interval",
-            QCoreApplication::translate("main", "interval to set read timer to read"),
-            QCoreApplication::translate("main", "milliseconds"));
+                                          QCoreApplication::translate("main", "interval to set read timer to read"),
+                                          QCoreApplication::translate("main", "milliseconds"));
     parser.addOption(readIntervalOption);
 
     QCommandLineOption writeIntervalOption(QStringList() << "w" << "write-interval",
-            QCoreApplication::translate("main", "interval to set write timer to write"),
-            QCoreApplication::translate("main", "milliseconds"));
+                                           QCoreApplication::translate("main", "interval to set write timer to write"),
+                                           QCoreApplication::translate("main", "milliseconds"));
     parser.addOption(writeIntervalOption);
 
     QCommandLineOption readIterationsOption(QStringList() << "i" << "read-iterations",
-            QCoreApplication::translate("main", "number of read iterations to attempt"),
-            QCoreApplication::translate("main", "iterations"));
+                                            QCoreApplication::translate("main", "number of read iterations to attempt"),
+                                            QCoreApplication::translate("main", "iterations"));
     parser.addOption(readIterationsOption);
 
     QCommandLineOption numberVmsOption(QStringList() << "n" << "number-vms",
-            QCoreApplication::translate("main", "number of vms to simulate"),
-            QCoreApplication::translate("main", "vms"));
+                                       QCoreApplication::translate("main", "number of vms to simulate"),
+                                       QCoreApplication::translate("main", "vms"));
     parser.addOption(numberVmsOption);
 
     QCommandLineOption sessionBusOption(QStringList() << "x" << "use-session-bus",
-            QCoreApplication::translate("main", "use session bus instead of system bus (useful for testing)"));
+                                        QCoreApplication::translate("main", "use session bus instead of system bus (useful for testing)"));
     parser.addOption(sessionBusOption);
 
     parser.process(*app);

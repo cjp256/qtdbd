@@ -95,11 +95,11 @@ void parseCommandLine(QCommandLineParser &parser, QCoreApplication &app, CmdLine
     parser.addVersionOption();
 
     QCommandLineOption debugOption(QStringList() << "d" << "debug",
-            QCoreApplication::translate("main", "enable debug/verbose logging"));
+                                   QCoreApplication::translate("main", "enable debug/verbose logging"));
     parser.addOption(debugOption);
 
     QCommandLineOption foregroundOption(QStringList() << "f" << "foreground",
-            QCoreApplication::translate("main", "run in foreground - do not fork"));
+                                        QCoreApplication::translate("main", "run in foreground - do not fork"));
     parser.addOption(foregroundOption);
 
     QCommandLineOption skipLookupDomIDOption(QStringList() << "s" << "skip-domid-lookup",
@@ -107,21 +107,21 @@ void parseCommandLine(QCommandLineParser &parser, QCoreApplication &app, CmdLine
     parser.addOption(skipLookupDomIDOption);
 
     QCommandLineOption consoleLogOption(QStringList() << "c" << "console-logging",
-            QCoreApplication::translate("main", "use console logging instead of syslog"));
+                                        QCoreApplication::translate("main", "use console logging instead of syslog"));
     parser.addOption(consoleLogOption);
 
     QCommandLineOption sessionBusOption(QStringList() << "x" << "use-session-bus",
-            QCoreApplication::translate("main", "use session bus instead of system bus (useful for testing)"));
+                                        QCoreApplication::translate("main", "use session bus instead of system bus (useful for testing)"));
     parser.addOption(sessionBusOption);
 
     QCommandLineOption maxDbFlushTimeOption(QStringList() << "t" << "db-max-flush-delay",
-            QCoreApplication::translate("main", "set maximum db flush delay to <milliseconds>."),
-            QCoreApplication::translate("main", "milliseconds"));
+                                            QCoreApplication::translate("main", "set maximum db flush delay to <milliseconds>."),
+                                            QCoreApplication::translate("main", "milliseconds"));
     parser.addOption(maxDbFlushTimeOption);
 
     QCommandLineOption dbDirectoryOption(QStringList() << "w" << "db-base-directory",
-            QCoreApplication::translate("main", "set base db path to <directory>"),
-            QCoreApplication::translate("main", "directory"));
+                                         QCoreApplication::translate("main", "set base db path to <directory>"),
+                                         QCoreApplication::translate("main", "directory"));
     parser.addOption(dbDirectoryOption);
 
     parser.process(app);

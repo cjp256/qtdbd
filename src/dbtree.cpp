@@ -22,11 +22,11 @@ DBTree::DBTree(QString dbPath, int maxFlushDelayMillis) : dbRoot(), dbPath(dbPat
         QStringList nameFilter;
 
         // make sure dom-store and vms directories exist
-        if (!domstoreDir.exists()){
+        if (!domstoreDir.exists()) {
             domstoreDir.mkpath(".");
         }
 
-        if (!vmsDir.exists()){
+        if (!vmsDir.exists()) {
             vmsDir.mkpath(".");
         }
 

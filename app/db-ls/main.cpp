@@ -83,15 +83,15 @@ void parseCommandLine(QCommandLineParser &parser, QCoreApplication &app, CmdLine
     parser.addPositionalArgument("key", QCoreApplication::translate("main", "key"));
 
     QCommandLineOption debugOption(QStringList() << "d" << "debug",
-            QCoreApplication::translate("main", "enable debug/verbose logging"));
+                                   QCoreApplication::translate("main", "enable debug/verbose logging"));
     parser.addOption(debugOption);
 
     QCommandLineOption syslogOption(QStringList() << "s" << "syslog",
-            QCoreApplication::translate("main", "enable logging via syslog"));
+                                    QCoreApplication::translate("main", "enable logging via syslog"));
     parser.addOption(syslogOption);
 
     QCommandLineOption sessionBusOption(QStringList() << "x" << "use-session-bus",
-            QCoreApplication::translate("main", "use session bus instead of system bus (useful for testing)"));
+                                        QCoreApplication::translate("main", "use session bus instead of system bus (useful for testing)"));
     parser.addOption(sessionBusOption);
 
     parser.process(app);
@@ -103,7 +103,7 @@ void parseCommandLine(QCommandLineParser &parser, QCoreApplication &app, CmdLine
     const QStringList posArgs = parser.positionalArguments();
     if (posArgs.size() >= 1) {
         opts->key = posArgs.at(0);
-    }    
+    }
 
     qDebug() << "debugging enabled:" << opts->debuggingEnabled;
     qDebug() << "syslog enabled:" << opts->syslogEnabled;
@@ -149,7 +149,7 @@ void lsObject(QMPointer<QMJsonValue> value, QStringList &outStringList, QString 
     if (value->isObject()) {
         out = QString(level, QChar(' ')) + key + " =";
         outStringList.append(out);
-        for (const auto &subKey : value->toObject()->keys()) {
+for (const auto &subKey : value->toObject()->keys()) {
             lsObject(value->toObject()->value(subKey), outStringList, subKey, level + 1);
         }
     }

@@ -82,15 +82,15 @@ void parseCommandLine(QCommandLineParser &parser, QCoreApplication &app, CmdLine
     parser.addPositionalArgument("key", QCoreApplication::translate("main", "key"));
 
     QCommandLineOption debugOption(QStringList() << "d" << "debug",
-            QCoreApplication::translate("main", "enable debug/verbose logging"));
+                                   QCoreApplication::translate("main", "enable debug/verbose logging"));
     parser.addOption(debugOption);
 
     QCommandLineOption syslogOption(QStringList() << "s" << "syslog",
-            QCoreApplication::translate("main", "enable logging via syslog"));
+                                    QCoreApplication::translate("main", "enable logging via syslog"));
     parser.addOption(syslogOption);
 
     QCommandLineOption sessionBusOption(QStringList() << "x" << "use-session-bus",
-            QCoreApplication::translate("main", "use session bus instead of system bus (useful for testing)"));
+                                        QCoreApplication::translate("main", "use session bus instead of system bus (useful for testing)"));
     parser.addOption(sessionBusOption);
 
     parser.process(app);

@@ -5,7 +5,7 @@
 
 class TestDBD: public QObject
 {
-Q_OBJECT
+    Q_OBJECT
 public:
     TestDBD();
     QStringList splitPath(QString path);
