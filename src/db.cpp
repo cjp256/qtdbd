@@ -137,12 +137,14 @@ QString Db::dump(const QString &path)
     qDebug() << getSenderId() << " dump(" << path << ")";
 
     QStringList split;
+
     if (!senderPathSplit(path, split)) {
         sendErrorReply(QDBusError::InternalError, "unable to lookup sender domid");
         return "";
     }
 
     QMPointer<QMJsonValue> value = dbTree->getValue(split);
+
     if (value.isNull()) {
         qDebug() << "dump() no object found";
         return "null";
@@ -176,7 +178,14 @@ void Db::inject(const QString &path, const QString &value)
         return;
     }
 
-    dbTree->mergeValue(split, QMPointer<QMJsonValue>(QMJsonValue::fromJson(value)));
+    auto jsonValue = QMPointer<QMJsonValue>(QMJsonValue::fromJson(value));
+
+    if (jsonValue.isNull()) {
+        sendErrorReply(QDBusError::InternalError, "invalid json value");
+        return;
+    }
+
+    dbTree->mergeValue(split, jsonValue);
 }
 
 QStringList Db::list(const QString &path)
@@ -248,9 +257,7 @@ QByteArray Db::read_binary(const QString &path)
 {
     qDebug() << getSenderId() << " read_binary(" << path << ")";
 
-    QByteArray value;
-
-    return value;
+    return QByteArray();
 }
 
 void Db::rm(const QString &path)
@@ -258,6 +265,7 @@ void Db::rm(const QString &path)
     qDebug() << getSenderId() << " rm(" << path << ")";
 
     QStringList split;
+
     if (!senderPathSplit(path, split)) {
         sendErrorReply(QDBusError::InternalError, "unable to lookup sender domid");
         return;
@@ -271,10 +279,18 @@ void Db::write(const QString &path, const QString &value)
     qDebug() << getSenderId() << " write(" << path << ", " << value << ")";
 
     QStringList split;
+
     if (!senderPathSplit(path, split)) {
         sendErrorReply(QDBusError::InternalError, "unable to lookup sender domid");
         return;
     }
 
-    dbTree->setValue(split, QMPointer<QMJsonValue>(new QMJsonValue(value)));
+    auto jsonValue = QMPointer<QMJsonValue>(new QMJsonValue(value));
+
+    if (jsonValue.isNull()) {
+        sendErrorReply(QDBusError::InternalError, "invalid json value");
+        return;
+    }
+
+    dbTree->setValue(split, jsonValue);
 }

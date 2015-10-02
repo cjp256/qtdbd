@@ -35,12 +35,23 @@ QString SimpleJsonDB::jsonString()
 
     if (filterVmAndDomstoreKeys) {
         auto filteredValue = QMJsonValue::fromJson(dbString);
+
+        if (filteredValue.isNull()) {
+            qFatal("unable to convert db string to qmjsonvalue!");
+            exit(1);
+        }
+
+        if (!filteredValue->isObject()) {
+            qFatal("db qmjsonvalue is not an object!");
+            exit(1);
+        }
+
         filteredValue->toObject()->remove("vm");
         filteredValue->toObject()->remove("dom-store");
         dbString = filteredValue->toJson();
     }
-    releaseWriteLock();
 
+    releaseWriteLock();
     return dbString;
 }
 
@@ -86,6 +97,17 @@ void SimpleJsonDB::readFromDisk()
 #endif
         auto obj = QMPointer<QMJsonObject>(new QMJsonObject());
         db = QMPointer<QMJsonValue>(new QMJsonValue(obj));
+    }
+
+
+    if (db.isNull()) {
+        qFatal("unable to convert db file to qmjsonvalue!");
+        exit(1);
+    }
+
+    if (!db->isObject()) {
+        qFatal("input db is not an object!");
+        exit(1);
     }
 
 #if QT_VERSION >= 0x050500
