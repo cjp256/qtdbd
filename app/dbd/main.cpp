@@ -1,16 +1,15 @@
-#include <QtCore/QCoreApplication>
-#include <QtCore/QTimer>
-#include <QtDBus/QtDBus>
-#include <QMessageLogger>
-#include <QtGlobal>
 #include <stdio.h>
 #include <stdlib.h>
-#include "db.h"
-#include "dbinterfaceadaptor.h"
-#include "dbtree.h"
 #include <unistd.h>
 #include <syslog.h>
 #include <signal.h>
+#include <QtCore/QCoreApplication>
+#include <QtDBus/QtDBus>
+#include <QtGlobal>
+#include "db.h"
+#include "dbinterfaceadaptor.h"
+#include "dbtree.h"
+#include <comcitrixxenclientdbinterface.h>
 
 typedef struct
 {

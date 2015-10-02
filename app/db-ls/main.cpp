@@ -1,15 +1,12 @@
-#include <QtCore/QCoreApplication>
-#include <QtCore/QTimer>
-#include <QtDBus/QtDBus>
-#include <QMessageLogger>
-#include <QtGlobal>
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
+#include <QtCore/QCoreApplication>
+#include <QtDBus/QtDBus>
+#include <QtGlobal>
 #include "db.h"
 #include "dbinterfaceadaptor.h"
 #include "dbtree.h"
-#include <unistd.h>
-#include <syslog.h>
 #include <comcitrixxenclientdbinterface.h>
 #include <qmjson.h>
 
@@ -115,11 +112,16 @@ int main(int argc, char *argv[])
 
     // if it's valid, print it
     if (!reply.isValid()) {
-        qWarning() << "dbus not responding!";
+        qFatal("dbus not responding!");
         exit(1);
     }
 
     QMPointer<QMJsonValue> value = QMJsonValue::fromJson(reply.value());
+
+    if (value.isNull()) {
+        qFatal("received invalid json value!");
+        exit(1);
+    }
 
     QStringList outStringList;
     QString key = QString("");
