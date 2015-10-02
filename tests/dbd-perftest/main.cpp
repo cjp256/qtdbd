@@ -29,10 +29,7 @@ int main(int argc, char *argv[])
 
     DbdPerfTest perfTest(&app);
 
-    qDebug() << "parsing command line";
     perfTest.parseCommandLine();
-
-    qDebug() << "parsed command line";
 
     // setup exit handler
     signal(SIGQUIT, exitHandler);

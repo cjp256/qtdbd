@@ -27,7 +27,6 @@ public slots:
 
 private:
     QCoreApplication *app;
-    QCommandLineParser parser;
     double readInterval;
     double writeInterval;
     qulonglong readIterations;
