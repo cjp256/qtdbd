@@ -36,7 +36,7 @@ void parseCommandLine(QCoreApplication &app, CmdLineOptions *opts)
 
     const QStringList posArgs = parser.positionalArguments();
     if (posArgs.size() < 1) {
-        qWarning() << "invalid arguments";
+        qFatal("invalid arguments");
         exit(1);
     }
 
@@ -67,7 +67,7 @@ int main(int argc, char *argv[])
 
     // if it's valid, print it
     if (!reply.isValid()) {
-        qWarning() << "dbus not responding!";
+        qFatal("dbus not responding!");
         exit(1);
     }
 
