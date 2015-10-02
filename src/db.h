@@ -1,17 +1,18 @@
 #ifndef DB_H
 #define DB_H
 
+extern "C"
+{
+#include <stdlib.h>
+#include <xs.h>
+}
+
 #include <QObject>
 #include <QDBusContext>
 #include <QDBusConnection>
 #include <QDBusMessage>
 #include "dbtree.h"
 #include <qmjson.h>
-
-extern "C"
-{
-#include <xs.h>
-}
 
 class Db: public QObject,
     protected QDBusContext

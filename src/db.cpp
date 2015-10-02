@@ -56,7 +56,6 @@ int Db::getSenderDomId()
 
 QString Db::getUuidFromDomId(int domid)
 {
-    xs_transaction_t th;
     unsigned int len;
 
     if (xs == NULL) {
@@ -72,11 +71,9 @@ QString Db::getUuidFromDomId(int domid)
     const char *cpa = pba.data();
     qDebug() << "performing xs_read for:" << cpa;
 
-    th = xs_transaction_start(xs);
-    const char *uuidPath = (const char *)xs_read(xs, th, cpa, &len);
-    xs_transaction_end(xs, th, false);
+    char *uuidPath = (char *)xs_read(xs, 0, cpa, &len);
 
-    if (uuid == NULL || len == 0) {
+    if (uuidPath == NULL) {
         qWarning() << "unable to read vm path from xenstore for:" << vmPathQS;
         return QString();
     }
@@ -84,22 +81,25 @@ QString Db::getUuidFromDomId(int domid)
     qDebug() << "xs_read for:" << cpa << "returned:" << uuidPath;
 
     QString uuidPathQS = QString(uuidPath) + "/uuid";
+    free(uuidPath);
+
     pba = uuidPathQS.toLatin1();
     cpa = pba.data();
     qDebug() << "performing xs_read for:" << cpa;
 
-    th = xs_transaction_start(xs);
-    const char *uuid = (const char *)xs_read(xs, th, cpa, &len);
-    xs_transaction_end(xs, th, false);
+    char *uuid = (char *)xs_read(xs, 0, cpa, &len);
 
-    if (uuid == NULL || len == 0) {
+    if (uuid == NULL) {
         qWarning() << "unable to read uuid from xenstore for:" << uuidPathQS;
         return QString();
     }
 
     qDebug() << "xs_read for:" << cpa << "returned:" << uuid;
 
-    return QString(uuid);
+    QString uuidQS = QString(uuid);
+    free(uuid);
+
+    return uuidQS;
 }
 
 bool Db::senderPathSplit(QString path, QStringList &splitPath)
