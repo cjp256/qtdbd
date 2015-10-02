@@ -24,7 +24,6 @@ typedef struct
 } CmdLineOptions;
 
 static CmdLineOptions g_cmdLineOptions;
-static  DBTree *dbTree = nullptr;
 
 void logOutput(QtMsgType type, const QMessageLogContext&, const QString& msg)
 {
@@ -81,15 +80,6 @@ void exitHandler(int signal)
 
 void parseCommandLine(QCommandLineParser &parser, QCoreApplication &app, CmdLineOptions *opts)
 {
-    // set defaults
-    opts->debuggingEnabled = false;
-    opts->foregroundEnabled = false;
-    opts->skipDomidLookupEnabled = false;
-    opts->consoleLoggingEnabled = false;
-    opts->sessionBusEnabled = false;
-    opts->dbMaxDelayMillis = 3000;
-    opts->dbBaseDirectoryPath = QString("/config");
-
     parser.setApplicationDescription("openxt simple db storage daemon");
     parser.addHelpOption();
     parser.addVersionOption();
@@ -134,10 +124,14 @@ void parseCommandLine(QCommandLineParser &parser, QCoreApplication &app, CmdLine
 
     if (parser.isSet(maxDbFlushTimeOption)) {
         opts->dbMaxDelayMillis = parser.value(maxDbFlushTimeOption).toDouble();
+    } else {
+        opts->dbMaxDelayMillis = 3000;
     }
 
     if (parser.isSet(dbDirectoryOption)) {
         opts->dbBaseDirectoryPath = parser.value(dbDirectoryOption);
+    } else {
+        opts->dbBaseDirectoryPath = QString("/config");
     }
 
     qDebug() << "debugging enabled:" << opts->debuggingEnabled;
@@ -184,7 +178,7 @@ int main(int argc, char *argv[])
         exit(2);
     }
 
-    dbTree = new DBTree(g_cmdLineOptions.dbBaseDirectoryPath, g_cmdLineOptions.dbMaxDelayMillis);
+    DBTree *dbTree = new DBTree(g_cmdLineOptions.dbBaseDirectoryPath, g_cmdLineOptions.dbMaxDelayMillis);
     Db *db = new Db(dbTree, !g_cmdLineOptions.skipDomidLookupEnabled);
     new DbInterfaceAdaptor(db);
 
