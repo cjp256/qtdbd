@@ -85,8 +85,9 @@ void lsObject(QMPointer<QMJsonValue> value, QStringList &outStringList, QString 
     if (value->isObject()) {
         out = QString(level, QChar(' ')) + key + " =";
         outStringList.append(out);
-for (const auto &subKey : value->toObject()->keys()) {
-            lsObject(value->toObject()->value(subKey), outStringList, subKey, level + 1);
+
+        for (auto i = value->toObject()->begin(); i != value->toObject()->end(); ++i) {
+            lsObject(i.value(), outStringList, i.key(), level + 1);
         }
     }
 }

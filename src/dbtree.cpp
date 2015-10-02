@@ -163,7 +163,7 @@ QMPointer<QMJsonValue> DBTree::getValue(const QStringList &splitPath)
 
     // traverse tree parts
     QStringList currentSplitPath;
-    foreach (const QString &part, splitPath) {
+    for (const QString &part : splitPath) {
         currentSplitPath << part;
         qDebug() << "getValue: currentSplitPath:" << currentSplitPath << "type:" << obj->type();
 
@@ -203,7 +203,7 @@ void DBTree::setValue(const QStringList &splitPath, QMPointer<QMJsonValue> value
     // make tree as required
     QStringList currentSplitPath;
     auto currentDb = mainDb;
-    foreach (const QString &part, parentList) {
+    for (const QString &part : parentList) {
         currentSplitPath << part;
         qDebug() << "setValue: currentSplitPath:" << currentSplitPath << "type:" << obj->type();
 
@@ -256,7 +256,7 @@ void DBTree::rmValue(const QStringList &splitPath)
 
     // iterate through parent objects
     QStringList currentSplitPath;
-    foreach (const QString &part, parentList) {
+    for (const QString &part : parentList) {
         currentSplitPath << part;
         qDebug() << "rmValue: currentSplitPath:" << currentSplitPath << "type:" << obj->type();
 
@@ -297,7 +297,7 @@ void DBTree::mergeValue(const QStringList &splitPath, QMPointer<QMJsonValue> val
 
     // iterate through parent objects
     QStringList currentSplitPath;
-    foreach (const QString &part, parentList) {
+    for (const QString &part : parentList) {
         currentSplitPath << part;
         qDebug() << "mergeValue: currentSplitPath:" << currentSplitPath << "type:" << obj->type();
 
@@ -331,11 +331,11 @@ void DBTree::exitCleanup()
 
     mainDb->forcePendingFlush();
 
-    foreach (auto db, vmsDbs) {
+    for (auto db : vmsDbs) {
         db->forcePendingFlush();
     }
 
-    foreach (auto db, domstoreDbs) {
+    for (auto db : domstoreDbs) {
         db->forcePendingFlush();
     }
 

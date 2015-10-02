@@ -31,7 +31,7 @@ bool TestDBD::copyDirectory(const QString &srcPath, const QString &dstPath)
     }
 
     // copy over all files, and recursively copy directories
-    foreach (const QString &fileName, srcDir.entryList(QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot | QDir::Hidden | QDir::System)) {
+    for (const QString &fileName : srcDir.entryList(QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot | QDir::Hidden | QDir::System)) {
         const QString newSrcPath = srcPath + QDir::separator() + fileName;
         const QString newDstPath = dstPath + QDir::separator() + fileName;
 
