@@ -127,9 +127,6 @@ void SimpleJsonDB::readFromDisk()
         db = QMPointer<QMJsonValue>(new QMJsonValue(obj));
     }
 
-#if QT_VERSION >= 0x050500
-    qInfo() << "read db:" << path << "value:" << db;
-#endif
     releaseWriteLock();
 }
 
