@@ -69,8 +69,7 @@ public:
     DbInterfaceAdaptor(QObject *parent);
     virtual ~DbInterfaceAdaptor();
 
-public: // PROPERTIES
-public Q_SLOTS: // METHODS
+public slots: // METHODS
     QString dump(const QString &path);
     bool exists(const QString &path);
     void inject(const QString &path, const QString &value);
@@ -79,7 +78,6 @@ public Q_SLOTS: // METHODS
     QByteArray read_binary(const QString &path);
     void rm(const QString &path);
     void write(const QString &path, const QString &value);
-Q_SIGNALS: // SIGNALS
 };
 
 #endif
