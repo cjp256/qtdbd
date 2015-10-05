@@ -14,12 +14,17 @@ class DBTree : public QObject
 public:
     DBTree(const QString dbPath = ":memory:", int maxFlushDelayMillis = 3000);
     ~DBTree();
+    QSharedPointer<SimpleJsonDB> createChildDb(const QString parentPath, const QString topLevel, const QString secondLevel, QHash<QString, QSharedPointer<SimpleJsonDB>> &dbs);
+    void loadChildren(const QString path, const QString key, QHash<QString, QSharedPointer<SimpleJsonDB>> &dbs);
+    void loadTree();
     QSharedPointer<SimpleJsonDB> lookupDb(const QStringList &splitPath);
     QMPointer<QMJsonValue> getValue(const QStringList &splitPath);
     void setValue(const QStringList &splitPath, QMPointer<QMJsonValue> value, bool skipFlush=false);
     void mergeValue(const QStringList &splitPath, QMPointer<QMJsonValue> value);
     void rmValue(const QStringList &splitPath);
+
     QMPointer<QMJsonValue> dbRoot;
+
 private:
     QString dbPath;
     int maxFlushDelay;
@@ -27,10 +32,11 @@ private:
     QThread dbWriterThread;
     QHash<QString, QSharedPointer<SimpleJsonDB>> vmsDbs;
     QHash<QString, QSharedPointer<SimpleJsonDB>> domstoreDbs;
+
 signals:
 public slots:
-public Q_SLOTS: // METHODS
     void exitCleanup();
+
 };
 
 #endif // DBTREE_H

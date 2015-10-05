@@ -10,97 +10,85 @@
 DBTree::DBTree(QString dbPath, int maxFlushDelayMillis) : dbRoot(), dbPath(dbPath), maxFlushDelay(maxFlushDelayMillis), mainDb(nullptr), dbWriterThread(this)
 {
     qDebug() << "DBTree init(" << dbPath << "," << maxFlushDelay << ")";
-
-    if (dbPath == ":memory:") {
-        mainDb = QSharedPointer<SimpleJsonDB>(new SimpleJsonDB(QString(""), QString(":memory:"), maxFlushDelayMillis));
-        mainDb->setFilterVmAndDomstoreKeys(true);
-        dbRoot = mainDb->getValue();
-    } else {
-        QDir topDir = QDir(dbPath);
-        QDir domstoreDir = QDir(dbPath + QDir::separator() + "dom-store");
-        QDir vmsDir = QDir(dbPath + QDir::separator() + "vms");
-        QStringList nameFilter;
-
-        // make sure dom-store and vms directories exist
-        if (!domstoreDir.exists()) {
-            domstoreDir.mkpath(".");
-        }
-
-        if (!vmsDir.exists()) {
-            vmsDir.mkpath(".");
-        }
-
-        nameFilter << "*.db";
-
-        domstoreDir.setNameFilters(nameFilter);
-        domstoreDir.setFilter(QDir::Files);
-        vmsDir.setNameFilters(nameFilter);
-        vmsDir.setFilter(QDir::Files);
-
-        mainDb = QSharedPointer<SimpleJsonDB>(new SimpleJsonDB(QString(""), topDir.filePath("db"), maxFlushDelayMillis));
-        mainDb->setFilterVmAndDomstoreKeys(true);
-        dbRoot = mainDb->getValue();
-
-        // load children domstore nodes
-        QStringList entries = domstoreDir.entryList();
-        for( QStringList::ConstIterator entry=entries.begin(); entry!=entries.end(); ++entry )
-        {
-            QString fileName = *entry;
-            QString filePath = dbPath + QDir::separator() + "dom-store" + QDir::separator() + fileName;
-            qDebug() << "dom-store node: " << filePath;
-
-            QRegExp regex = QRegExp("[0-9a-f]{8}-([0-9a-f]{4}-){3}[0-9a-f]{12}.db");
-
-            if (!regex.exactMatch(fileName)) {
-                qDebug() << "ignoring invalid format dom-store db:" << filePath;
-                continue;
-            }
-
-            QString uuid = fileName.remove(36,3);
-            QString vPath = QString("/dom-store/") + uuid;
-            QStringList splitPath = vPath.split("/", QString::SplitBehavior::SkipEmptyParts);
-
-            qDebug() << "creating dom-store for uuid:" << uuid;
-
-            auto db = QSharedPointer<SimpleJsonDB>(new SimpleJsonDB(vPath, filePath, maxFlushDelayMillis));
-            domstoreDbs.insert(uuid, db);
-
-            setValue(splitPath, db->getValue(), true);
-
-        }
-
-        entries = vmsDir.entryList();
-        for( QStringList::ConstIterator entry=entries.begin(); entry!=entries.end(); ++entry )
-        {
-            QString fileName = *entry;
-            QString filePath = dbPath + QDir::separator() + "vms" + QDir::separator() + fileName;
-            qDebug() << "vms node: " << filePath;
-
-            QRegExp regex = QRegExp("[0-9a-f]{8}-([0-9a-f]{4}-){3}[0-9a-f]{12}.db");
-
-            if (!regex.exactMatch(fileName)) {
-                qDebug() << "ignoring invalid format vms db:" << filePath;
-                continue;
-            }
-
-            QString uuid = fileName.remove(36,3);
-            QString vPath = QString("/vm/") + uuid;
-            QStringList splitPath = vPath.split("/", QString::SplitBehavior::SkipEmptyParts);
-
-            qDebug() << "creating vms for uuid:" << uuid;
-
-            auto db = QSharedPointer<SimpleJsonDB>(new SimpleJsonDB(vPath, filePath, maxFlushDelayMillis));
-            vmsDbs.insert(uuid, db);
-
-            setValue(splitPath, db->getValue(), true);
-        }
-    }
+    loadTree();
 }
 
 DBTree::~DBTree()
 {
 }
 
+QSharedPointer<SimpleJsonDB> DBTree::createChildDb(const QString parentPath, const QString topLevel, const QString secondLevel, QHash<QString, QSharedPointer<SimpleJsonDB>> &dbs)
+{
+    QString path = parentPath + QDir::separator() + secondLevel + ".db";
+    QString vPath = topLevel + "/" + secondLevel;
+    QStringList baseSplitPath;
+    baseSplitPath << topLevel << secondLevel;
+
+    qDebug() << "creating db in:" << topLevel << " for uuid:" << secondLevel << "at path:" << path;
+
+    auto db = QSharedPointer<SimpleJsonDB>(new SimpleJsonDB(vPath, path, maxFlushDelay));
+    dbs.insert(secondLevel, db);
+    setValue(baseSplitPath, db->getValue(), true);
+    return db;
+}
+
+void DBTree::loadChildren(const QString path, const QString key, QHash<QString, QSharedPointer<SimpleJsonDB>> &dbs)
+{
+    QDir childrenDir = QDir(path);
+    QStringList nameFilter;
+
+    // make sure child directory exists, if not - create it
+    if (!childrenDir.exists()) {
+        childrenDir.mkpath(".");
+    }
+
+    nameFilter << "*.db";
+
+    childrenDir.setNameFilters(nameFilter);
+    childrenDir.setFilter(QDir::Files);
+
+    // load children db nodes
+    QStringList entries = childrenDir.entryList();
+    for( QStringList::ConstIterator entry=entries.begin(); entry!=entries.end(); ++entry )
+    {
+        QString fileName = *entry;
+        QString filePath = path + QDir::separator() + fileName;
+        qDebug() << "path:" << path << "node: " << filePath;
+
+        QRegExp regex = QRegExp("[0-9a-f]{8}-([0-9a-f]{4}-){3}[0-9a-f]{12}.db");
+
+        if (!regex.exactMatch(fileName)) {
+            qDebug() << "ignoring invalid format db:" << filePath;
+            continue;
+        }
+
+        QString uuid = fileName.remove(36,3);
+        createChildDb(path, key, uuid, dbs);
+    }
+}
+
+void DBTree::loadTree()
+{
+    if (dbPath == ":memory:") {
+        mainDb = QSharedPointer<SimpleJsonDB>(new SimpleJsonDB(QString(""), QString(":memory:"), maxFlushDelay));
+        mainDb->setFilterVmAndDomstoreKeys(true);
+        dbRoot = mainDb->getValue();
+    } else {
+        QString topDbPath = dbPath + QDir::separator() + "db";
+        mainDb = QSharedPointer<SimpleJsonDB>(new SimpleJsonDB(QString(""), topDbPath, maxFlushDelay));
+        mainDb->setFilterVmAndDomstoreKeys(true);
+        dbRoot = mainDb->getValue();
+
+        QString domstorePath = dbPath + QDir::separator() + "dom-store";
+        loadChildren(domstorePath, "dom-store", domstoreDbs);
+
+        QString vmsPath = dbPath + QDir::separator() + "vms";
+        loadChildren(vmsPath, "vm", vmsDbs);
+    }
+
+}
+
+// find existing db, creating one if it does not exist
 QSharedPointer<SimpleJsonDB> DBTree::lookupDb(const QStringList &splitPath)
 {
     if (splitPath.length() < 2) {
@@ -112,38 +100,24 @@ QSharedPointer<SimpleJsonDB> DBTree::lookupDb(const QStringList &splitPath)
 
     if (topLevel == "dom-store") {
         QHash<QString, QSharedPointer<SimpleJsonDB>>::iterator i = domstoreDbs.find(secondLevel);
+
         if (i != domstoreDbs.end() && i.key() == secondLevel) {
             return i.value();
         }
 
-        // does not exist - create one
-        QString filePath = dbPath + QDir::separator() + "dom-store" + QDir::separator() + secondLevel + ".db";
-        QString vPath = QString("/dom-store/") + secondLevel;
-        QStringList baseSplitPath;
-        baseSplitPath << topLevel << secondLevel;
+        // not found, create one
+        return createChildDb(dbPath + QDir::separator() + "dom-store", topLevel, secondLevel, domstoreDbs);
+    }
 
-        qDebug() << "creating dom-store db for uuid:" << secondLevel << "at path:" << filePath;
-        auto db = QSharedPointer<SimpleJsonDB>(new SimpleJsonDB(vPath, filePath, maxFlushDelay));
-        domstoreDbs.insert(secondLevel, db);
-        setValue(baseSplitPath, db->getValue(), true);
-        return db;
-    } else if (topLevel == "vm") {
+    if (topLevel == "vm") {
         QHash<QString, QSharedPointer<SimpleJsonDB>>::iterator i = vmsDbs.find(secondLevel);
+
         if (i != vmsDbs.end() && i.key() == secondLevel) {
             return i.value();
         }
 
-        // does not exist - create one
-        QString filePath = dbPath + QDir::separator() + "vms" + QDir::separator() + secondLevel + ".db";
-        QString vPath = QString("/vm/") + secondLevel;
-        QStringList baseSplitPath;
-        baseSplitPath << topLevel << secondLevel;
-
-        qDebug() << "creating vm db for uuid:" << secondLevel << "at path:" << filePath;
-        auto db = QSharedPointer<SimpleJsonDB>(new SimpleJsonDB(vPath, filePath, maxFlushDelay));
-        vmsDbs.insert(secondLevel, db);
-        setValue(baseSplitPath, db->getValue(), true);
-        return db;
+        // not found, create one
+        return createChildDb(dbPath + QDir::separator() + "vms", topLevel, secondLevel, vmsDbs);
     }
 
     // if not in domstore or vms db, must be in main db
