@@ -91,7 +91,7 @@ void DBTree::loadTree()
 }
 
 // find existing db, creating one if it does not exist
-QSharedPointer<SimpleJsonDB> DBTree::lookupDb(const QStringList &splitPath)
+QSharedPointer<SimpleJsonDB> DBTree::lookupDb(const QStringList &splitPath, bool createEmpty)
 {
     if (splitPath.length() < 2) {
         return mainDb;
@@ -107,8 +107,11 @@ QSharedPointer<SimpleJsonDB> DBTree::lookupDb(const QStringList &splitPath)
             return i.value();
         }
 
-        // not found, create one
-        return createChildDb(dbPath + QDir::separator() + "dom-store", topLevel, secondLevel, domstoreDbs);
+        if (createEmpty) {
+            return createChildDb(dbPath + QDir::separator() + "dom-store", topLevel, secondLevel, domstoreDbs);
+        } else {
+            return QSharedPointer<SimpleJsonDB>();
+        }
     }
 
     if (topLevel == "vm") {
@@ -118,8 +121,11 @@ QSharedPointer<SimpleJsonDB> DBTree::lookupDb(const QStringList &splitPath)
             return i.value();
         }
 
-        // not found, create one
-        return createChildDb(dbPath + QDir::separator() + "vms", topLevel, secondLevel, vmsDbs);
+        if (createEmpty) {
+            return createChildDb(dbPath + QDir::separator() + "vms", topLevel, secondLevel, vmsDbs);
+        } else {
+            return QSharedPointer<SimpleJsonDB>();
+        }
     }
 
     // if not in domstore or vms db, must be in main db
@@ -165,6 +171,9 @@ void DBTree::setValue(const QStringList &splitPath, QMPointer<QMJsonValue> value
 {
     QMPointer<QMJsonValue> obj = dbRoot;
 
+    // make sure db exists
+    lookupDb(splitPath, true);
+
     // if it is top of tree, ignore
     if (splitPath.length() == 0) {
         qWarning("setValue: ignoring attempt to write to root");
@@ -202,7 +211,7 @@ void DBTree::setValue(const QStringList &splitPath, QMPointer<QMJsonValue> value
             return;
         }
 
-        currentDb = lookupDb(currentSplitPath);
+        currentDb = lookupDb(currentSplitPath, true);
     }
 
     qDebug() << "setValue() inserting value:" << value;
@@ -220,11 +229,16 @@ void DBTree::setValue(const QStringList &splitPath, QMPointer<QMJsonValue> value
 void DBTree::rmValue(const QStringList &splitPath)
 {
     QMPointer<QMJsonValue> obj = dbRoot;
-    auto db = lookupDb(splitPath);
 
     // if it is top of tree, ignore
     if (splitPath.length() == 0) {
         qWarning("rmValue: ignoring attempt to write to root");
+        return;
+    }
+
+    // if db doesn't exist, nothing to do
+    auto db = lookupDb(splitPath, false);
+    if (db.isNull()) {
         return;
     }
 
@@ -276,6 +290,9 @@ void DBTree::mergeValue(const QStringList &splitPath, QMPointer<QMJsonValue> val
 {
     QMPointer<QMJsonValue> obj = dbRoot;
 
+    // make sure db exists
+    lookupDb(splitPath, true);
+
     // if it is top of tree, ignore
     if (splitPath.length() == 0) {
         qWarning("setValue: ignoring attempt to write to root");
@@ -308,7 +325,7 @@ void DBTree::mergeValue(const QStringList &splitPath, QMPointer<QMJsonValue> val
             return;
         }
 
-        currentDb = lookupDb(currentSplitPath);
+        currentDb = lookupDb(currentSplitPath, true);
     }
 
     qDebug() << "mergeValue(): attempting merge obj:" << obj << "value:" << value->toObject();

@@ -17,7 +17,7 @@ public:
     QSharedPointer<SimpleJsonDB> createChildDb(const QString parentPath, const QString topLevel, const QString secondLevel, QHash<QString, QSharedPointer<SimpleJsonDB>> &dbs);
     void loadChildren(const QString path, const QString key, QHash<QString, QSharedPointer<SimpleJsonDB>> &dbs);
     void loadTree();
-    QSharedPointer<SimpleJsonDB> lookupDb(const QStringList &splitPath);
+    QSharedPointer<SimpleJsonDB> lookupDb(const QStringList &splitPath, bool createEmpty);
     QMPointer<QMJsonValue> getValue(const QStringList &splitPath);
     void setValue(const QStringList &splitPath, QMPointer<QMJsonValue> value, bool skipFlush=false);
     void mergeValue(const QStringList &splitPath, QMPointer<QMJsonValue> value);
