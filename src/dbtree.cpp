@@ -164,6 +164,7 @@ QMPointer<QMJsonValue> DBTree::getValue(const QStringList &splitPath)
 void DBTree::setValue(const QStringList &splitPath, QMPointer<QMJsonValue> value, bool skipFlush)
 {
     QMPointer<QMJsonValue> obj = dbRoot;
+    auto db = lookupDb(splitPath);
 
     // if it is top of tree, ignore
     if (splitPath.length() == 0) {
@@ -187,10 +188,6 @@ void DBTree::setValue(const QStringList &splitPath, QMPointer<QMJsonValue> value
             currentDb->acquireWriteLock();
             obj->toObject()->insert(part, QMPointer<QMJsonObject>(new QMJsonObject()));
             currentDb->releaseWriteLock();
-
-            if (!skipFlush) {
-                currentDb->queueFlush();
-            }
         }
 
         qDebug() << "setValue() getting value";
@@ -211,8 +208,9 @@ void DBTree::setValue(const QStringList &splitPath, QMPointer<QMJsonValue> value
     obj->toObject()->insert(key, value);
     currentDb->releaseWriteLock();
 
+    // notify db to flush
     if (!skipFlush) {
-        currentDb->queueFlush();
+        db->queueFlush();
     }
     return;
 }
@@ -255,7 +253,7 @@ void DBTree::rmValue(const QStringList &splitPath)
     db->acquireWriteLock();
     obj->toObject()->remove(key);
 
-    // unlink db if required
+    // unlink db if it is a top level child db key
     if (parentList.length() == 1) {
         if (parentList.at(0) == "vm") {
             vmsDbs.remove(key);
@@ -275,6 +273,7 @@ void DBTree::rmValue(const QStringList &splitPath)
 void DBTree::mergeValue(const QStringList &splitPath, QMPointer<QMJsonValue> value)
 {
     QMPointer<QMJsonValue> obj = dbRoot;
+    auto db = lookupDb(splitPath);
 
     // if it is top of tree, ignore
     if (splitPath.length() == 0) {
@@ -286,18 +285,13 @@ void DBTree::mergeValue(const QStringList &splitPath, QMPointer<QMJsonValue> val
 
     // iterate through parent objects
     QStringList currentSplitPath;
-    auto currentDb = mainDb;
     for (const QString &part : parentList) {
         currentSplitPath << part;
         qDebug() << "mergeValue: currentSplitPath:" << currentSplitPath << "type:" << obj->type();
 
         // create missing children nodes
         if (!obj->toObject()->contains(part)) {
-            currentDb->acquireWriteLock();
             obj->toObject()->insert(part, QMPointer<QMJsonObject>(new QMJsonObject()));
-            currentDb->releaseWriteLock();
-
-            currentDb->queueFlush();
         }
 
         obj = obj->toObject()->value(part);
@@ -307,17 +301,16 @@ void DBTree::mergeValue(const QStringList &splitPath, QMPointer<QMJsonValue> val
             qDebug() << "mergeValue() failed to traverse path:" << currentSplitPath << "type:" << obj->type();
             return;
         }
-
-        currentDb = lookupDb(currentSplitPath);
     }
 
     qDebug() << "mergeValue(): attempting merge obj:" << obj << "value:" << value->toObject();
 
-    currentDb->acquireWriteLock();
+    db->acquireWriteLock();
     obj->toObject()->unite(value->toObject(), QMJsonReplacementPolicy_Replace, QMJsonArrayUnitePolicy_Append);
-    currentDb->releaseWriteLock();
+    db->releaseWriteLock();
 
-    currentDb->queueFlush();
+    // notify db to flush
+    db->queueFlush();
 }
 
 void DBTree::exitCleanup()
