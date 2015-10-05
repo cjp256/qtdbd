@@ -85,21 +85,26 @@ void SimpleJsonDB::readFromDisk()
     acquireWriteLock();
 
     if (path != ":memory:") {
-        db = QMJsonValue::fromJsonFile(path);
-        qDebug() << "db from json file:" << db;
+        QFile dbFile(path);
 
-        // XXX: fix desired https://github.com/QtMark/qmjson/issues/9
-        if (db.isNull() || !db->isObject()) {
-            // save off bad db file for later review, but do not abort
-            // this is preferable than failing to boot if dbd doesn't come up
-            qCritical() << "failed to read db:" << path << "malformed?";
-            qCritical() << "moving bad db from:" << path << "to:" << path + ".bad";
-            QFile::rename(path, path + ".bad");
+        if (dbFile.exists) {
+            db = QMJsonValue::fromJsonFile(path);
+            qDebug() << "db from json file:" << db;
+
+            // XXX: fix desired https://github.com/QtMark/qmjson/issues/9
+            if (db.isNull() || !db->isObject()) {
+                // save off bad db file for later review, but do not abort
+                // this is preferable than failing to boot if dbd doesn't come up
+                qCritical() << "failed to read db:" << path << "malformed?" << dbFile.readAll();
+                qCritical() << "moving bad db from:" << path << "to:" << path + ".bad";
+                dbFile.rename(path + ".bad");
+            }
         }
     }
 
     // if no json file exists, create empty object
     if (db.isNull() || !db->isObject()) {
+        qDebug() << "creating default empty object for db:" << path;
         auto obj = QMPointer<QMJsonObject>(new QMJsonObject());
         db = QMPointer<QMJsonValue>(new QMJsonValue(obj));
     }
