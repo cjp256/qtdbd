@@ -87,7 +87,7 @@ void SimpleJsonDB::readFromDisk()
     if (path != ":memory:") {
         QFile dbFile(path);
 
-        if (dbFile.exists) {
+        if (dbFile.exists()) {
             db = QMJsonValue::fromJsonFile(path);
             qDebug() << "db from json file:" << db;
 
