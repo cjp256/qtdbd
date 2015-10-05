@@ -27,7 +27,9 @@ QSharedPointer<SimpleJsonDB> DBTree::createChildDb(const QString parentPath, con
     qDebug() << "creating db in:" << topLevel << " for uuid:" << secondLevel << "at path:" << path;
 
     auto db = QSharedPointer<SimpleJsonDB>(new SimpleJsonDB(vPath, path, maxFlushDelay));
+    mainDb->acquireWriteLock();
     dbs.insert(secondLevel, db);
+    mainDb->releaseWriteLock();
     setValue(baseSplitPath, db->getValue(), true);
     return db;
 }
@@ -250,6 +252,18 @@ void DBTree::rmValue(const QStringList &splitPath)
 
     db->acquireWriteLock();
     obj->toObject()->remove(key);
+
+    // unlink db if it is a top level child db key
+    if (parentList.length() == 1) {
+        if (parentList.at(0) == "vm") {
+            vmsDbs.remove(key);
+        }
+
+        if (parentList.at(0) == "dom-store") {
+            domstoreDbs.remove(key);
+        }
+    }
+
     db->releaseWriteLock();
 
     // notify db to flush
