@@ -25,7 +25,8 @@
 #include "db.h"
 #include "dbinterfaceadaptor.h"
 #include "dbtree.h"
-#include <comcitrixxenclientdbinterface.h>
+#include "comcitrixxenclientdbinterface.h"
+#include "dbdlogging.h"
 
 typedef struct
 {
@@ -61,12 +62,16 @@ void parseCommandLine(QCoreApplication &app, CmdLineOptions *opts)
 
     opts->key = posArgs.at(0);
 
+    DbdLogging::logger()->debugMode =  opts->debuggingEnabled;
+
     qDebug() << "debugging enabled:" << opts->debuggingEnabled;
     qDebug() << "key:" << opts->key;
 }
 
 int main(int argc, char *argv[])
 {
+    qInstallMessageHandler(DbdLogging::logOutput);
+
     QCoreApplication app(argc, argv);
     QCoreApplication::setApplicationName("db-exists");
     QCoreApplication::setApplicationVersion("3.0");

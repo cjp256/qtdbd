@@ -27,7 +27,8 @@
 #include "db.h"
 #include "dbinterfaceadaptor.h"
 #include "dbtree.h"
-#include <comcitrixxenclientdbinterface.h>
+#include "comcitrixxenclientdbinterface.h"
+#include "dbdlogging.h"
 
 typedef struct
 {
@@ -41,51 +42,6 @@ typedef struct
 } CmdLineOptions;
 
 static CmdLineOptions g_cmdLineOptions;
-
-void logOutput(QtMsgType type, const QMessageLogContext&, const QString& msg)
-{
-    switch (type) {
-    case QtDebugMsg:
-        if (g_cmdLineOptions.debuggingEnabled) {
-            if (!g_cmdLineOptions.consoleLoggingEnabled) {
-                syslog(LOG_DEBUG, "[DEBUG] %s\n", qPrintable(msg));
-            } else {
-                fprintf(stderr, "[DEBUG] %s\n", qPrintable(msg));
-            }
-        }
-        break;
-#if QT_VERSION >= 0x050500
-    case QtInfoMsg:
-        if (!g_cmdLineOptions.consoleLoggingEnabled) {
-            syslog(LOG_INFO, "[INFO] %s\n", qPrintable(msg));
-        } else {
-            fprintf(stderr, "[INFO] %s\n", qPrintable(msg));
-        }
-        break;
-#endif
-    case QtWarningMsg:
-        if (!g_cmdLineOptions.consoleLoggingEnabled) {
-            syslog(LOG_WARNING, "[WARNING] %s\n", qPrintable(msg));
-        } else {
-            fprintf(stderr, "[WARNING] %s\n", qPrintable(msg));
-        }
-        break;
-    case QtCriticalMsg:
-        if (!g_cmdLineOptions.consoleLoggingEnabled) {
-            syslog(LOG_CRIT, "[CRITICAL] %s\n", qPrintable(msg));
-        } else {
-            fprintf(stderr, "[CRITICAL] %s\n", qPrintable(msg));
-        }
-        break;
-    case QtFatalMsg:
-        if (!g_cmdLineOptions.consoleLoggingEnabled) {
-            syslog(LOG_ALERT, "[FATAL] %s\n", qPrintable(msg));
-        } else {
-            fprintf(stderr, "[FATAL] %s\n", qPrintable(msg));
-        }
-        abort();
-    }
-}
 
 void exitHandler(int signal)
 {
@@ -149,6 +105,9 @@ void parseCommandLine(QCommandLineParser &parser, QCoreApplication &app, CmdLine
         opts->dbBaseDirectoryPath = QString("/config");
     }
 
+    DbdLogging::logger()->syslogMode =  !opts->consoleLoggingEnabled;
+    DbdLogging::logger()->debugMode =  opts->debuggingEnabled;
+
     qDebug() << "debugging enabled:" << opts->debuggingEnabled;
     qDebug() << "foreground enabled:" << opts->foregroundEnabled;
     qDebug() << "skip domid lookup enabled:" << opts->skipDomidLookupEnabled;
@@ -160,7 +119,8 @@ void parseCommandLine(QCommandLineParser &parser, QCoreApplication &app, CmdLine
 
 int main(int argc, char *argv[])
 {
-    qInstallMessageHandler(logOutput);
+    qInstallMessageHandler(DbdLogging::logOutput);
+
     QCoreApplication app(argc, argv);
     QCoreApplication::setApplicationName("dbd");
     QCoreApplication::setApplicationVersion("3.0");
@@ -174,10 +134,6 @@ int main(int argc, char *argv[])
     signal(SIGHUP, exitHandler);
 
     parseCommandLine(parser, app, &g_cmdLineOptions);
-
-    if (!g_cmdLineOptions.consoleLoggingEnabled) {
-        openlog("dbd", LOG_PID, LOG_DAEMON);
-    }
 
     if (!g_cmdLineOptions.sessionBusEnabled) {
         bus = QDBusConnection::systemBus();

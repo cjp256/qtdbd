@@ -19,14 +19,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <qmjson.h>
 #include <QtCore/QCoreApplication>
 #include <QtDBus/QtDBus>
 #include <QtGlobal>
 #include "db.h"
 #include "dbinterfaceadaptor.h"
 #include "dbtree.h"
-#include <comcitrixxenclientdbinterface.h>
-#include <qmjson.h>
+#include "comcitrixxenclientdbinterface.h"
+#include "dbdlogging.h"
 
 typedef struct
 {
@@ -60,6 +61,8 @@ void parseCommandLine(QCoreApplication &app, CmdLineOptions *opts)
     } else {
         opts->key = QString("/");
     }
+
+    DbdLogging::logger()->debugMode =  opts->debuggingEnabled;
 
     qDebug() << "debugging enabled:" << opts->debuggingEnabled;
     qDebug() << "key:" << opts->key;
@@ -112,6 +115,8 @@ void lsObject(QMPointer<QMJsonValue> value, QStringList &outStringList, QString 
 
 int main(int argc, char *argv[])
 {
+    qInstallMessageHandler(DbdLogging::logOutput);
+
     QCoreApplication app(argc, argv);
     QCoreApplication::setApplicationName("db-ls");
     QCoreApplication::setApplicationVersion("3.0");

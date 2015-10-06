@@ -24,4 +24,5 @@ HEADERS += \
     simplejsondb.h \
     dbtree.h \
     dbinterfaceadaptor.h \
-    comcitrixxenclientdbinterface.h
+    comcitrixxenclientdbinterface.h \
+    dbdlogging.h
