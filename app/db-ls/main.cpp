@@ -140,6 +140,8 @@ int main(int argc, char *argv[])
         exit(1);
     }
 
+    qDebug() << "reply:" << reply.value();
+
     QMPointer<QMJsonValue> value = QMJsonValue::fromJson(reply.value());
 
     if (value.isNull()) {
