@@ -82,7 +82,7 @@ int main(int argc, char *argv[])
     }
 
     auto dbClient = new ComCitrixXenclientDbInterface("com.citrix.xenclient.db", "/", QDBusConnection::systemBus(), &app);
-    auto reply = dbClient->read(g_cmdLineOptions.key);
+    auto reply = dbClient->dump(g_cmdLineOptions.key);
 
     // wait until the dbus reply is ready
     reply.waitForFinished();
