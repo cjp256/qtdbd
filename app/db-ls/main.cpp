@@ -157,7 +157,12 @@ int main(int argc, char *argv[])
         key = splitPath.last();
     }
 
-    lsObject(value, outStringList, key, 0);
+    // special case handling for fake null value from dump() (compatibility purposes)
+    if (value->isNull()) {
+        outStringList.append(key + " = \"\"");
+    } else {
+        lsObject(value, outStringList, key, 0);
+    }
 
     QTextStream(stdout) << outStringList.join("\n") << endl;
     return 0;
