@@ -28,7 +28,8 @@ DbdPerfTestReader::~DbdPerfTestReader()
 
 void DbdPerfTestReader::setup()
 {
-    if (!QDBusConnection::systemBus().isConnected()) {
+    if (!QDBusConnection::systemBus().isConnected())
+    {
         qFatal("failed to connect to dbus");
         exit(1);
     }
@@ -58,25 +59,30 @@ void DbdPerfTestReader::performRead()
     reply.waitForFinished();
 
     // if it's valid, print it
-    if (!reply.isValid()) {
+    if (!reply.isValid())
+    {
         updateLock.lock();
         readErrorCount += 1;
         updateLock.unlock();
         return;
     }
 
-    if (reply.value() == QString("value")) {
+    if (reply.value() == QString("value"))
+    {
         updateLock.lock();
         readSuccessCount += 1;
         updateLock.unlock();
-    } else {
+    }
+    else
+    {
         qDebug() << "reading bad (valid) value??" << reply.value();
         updateLock.lock();
         readErrorCount += 1;
         updateLock.unlock();
     }
 
-    if (readIterations <= (readSuccessCount + readErrorCount)) {
+    if (readIterations <= (readSuccessCount + readErrorCount))
+    {
         // time to exit
         emit finished();
         QCoreApplication::quit();

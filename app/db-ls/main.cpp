@@ -56,9 +56,12 @@ void parseCommandLine(QCoreApplication &app, CmdLineOptions *opts)
     opts->debuggingEnabled = parser.isSet(debugOption);
 
     const QStringList posArgs = parser.positionalArguments();
-    if (posArgs.size() >= 1) {
+    if (posArgs.size() >= 1)
+    {
         opts->key = posArgs.at(0);
-    } else {
+    }
+    else
+    {
         opts->key = QString("/");
     }
 
@@ -74,40 +77,49 @@ void lsObject(QMPointer<QMJsonValue> value, QStringList &outStringList, QString 
 {
     QString out;
 
-    if (value->isNull()) {
+    if (value->isNull())
+    {
         out = QString(level, QChar(' ')) + key + " = null";
         outStringList.append(out);
         return;
     }
 
-    if (value->isBool()) {
+    if (value->isBool())
+    {
         //outstr.append("%s%s = \"%s\"" % (" " * level, key_name, str(obj)))
-        if (value->toBool()) {
+        if (value->toBool())
+        {
             out = QString(level, QChar(' ')) + key + " = \"true\"";
-        } else {
+        }
+        else
+        {
             out = QString(level, QChar(' ')) + key + " = \"false\"";
         }
         outStringList.append(out);
         return;
     }
 
-    if (value->isString()) {
+    if (value->isString())
+    {
         out = QString(level, QChar(' ')) + key + " = \"" + value->toString() + "\"";
         outStringList.append(out);
         return;
     }
 
-    if (value->isDouble()) {
+    if (value->isDouble())
+    {
         out = QString(level, QChar(' ')) + key + " = \"" + QString::number(value->toDouble()) + "\"";
         outStringList.append(out);
         return;
     }
 
-    if (value->isObject()) {
+    if (value->isObject())
+    {
         out = QString(level, QChar(' ')) + key + " =";
         outStringList.append(out);
 
-        for (auto i = value->toObject()->begin(); i != value->toObject()->end(); ++i) {
+        for (auto i = value->toObject()->begin(); i != value->toObject()->end(); ++i)
+        {
             lsObject(i.value(), outStringList, i.key(), level + 1);
         }
     }
@@ -123,7 +135,8 @@ int main(int argc, char *argv[])
 
     parseCommandLine(app, &g_cmdLineOptions);
 
-    if (!QDBusConnection::systemBus().isConnected()) {
+    if (!QDBusConnection::systemBus().isConnected())
+    {
         qFatal("failed to connect to dbus");
         exit(1);
     }
@@ -135,7 +148,8 @@ int main(int argc, char *argv[])
     reply.waitForFinished();
 
     // if it's valid, print it
-    if (!reply.isValid()) {
+    if (!reply.isValid())
+    {
         qFatal("dbus not responding!");
         exit(1);
     }
@@ -144,7 +158,8 @@ int main(int argc, char *argv[])
 
     QMPointer<QMJsonValue> value = QMJsonValue::fromJson(reply.value());
 
-    if (value.isNull()) {
+    if (value.isNull())
+    {
         qFatal("received invalid json value!");
         exit(1);
     }
@@ -153,14 +168,18 @@ int main(int argc, char *argv[])
     QString key = QString("");
     QStringList splitPath = g_cmdLineOptions.key.split("/", QString::SplitBehavior::SkipEmptyParts);
 
-    if (splitPath.length() > 0) {
+    if (splitPath.length() > 0)
+    {
         key = splitPath.last();
     }
 
     // special case handling for fake null value from dump() (compatibility purposes)
-    if (value->isNull()) {
+    if (value->isNull())
+    {
         outStringList.append(key + " = \"\"");
-    } else {
+    }
+    else
+    {
         lsObject(value, outStringList, key, 0);
     }
 

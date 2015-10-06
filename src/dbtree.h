@@ -39,7 +39,7 @@ public:
     void loadTree();
     QSharedPointer<SimpleJsonDB> lookupDb(const QStringList &splitPath, bool createEmpty);
     QMPointer<QMJsonValue> getValue(const QStringList &splitPath);
-    void setValue(const QStringList &splitPath, QMPointer<QMJsonValue> value, bool skipFlush=false);
+    void setValue(const QStringList &splitPath, QMPointer<QMJsonValue> value, bool skipFlush = false);
     void mergeValue(const QStringList &splitPath, QMPointer<QMJsonValue> value);
     void rmValue(const QStringList &splitPath);
 

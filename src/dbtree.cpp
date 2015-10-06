@@ -58,7 +58,8 @@ void DBTree::loadChildren(const QString path, const QString key, QHash<QString, 
     QStringList nameFilter;
 
     // make sure child directory exists, if not - create it
-    if (!childrenDir.exists()) {
+    if (!childrenDir.exists())
+    {
         childrenDir.mkpath(".");
     }
 
@@ -69,7 +70,7 @@ void DBTree::loadChildren(const QString path, const QString key, QHash<QString, 
 
     // load children db nodes
     QStringList entries = childrenDir.entryList();
-    for( QStringList::ConstIterator entry=entries.begin(); entry!=entries.end(); ++entry )
+    for (QStringList::ConstIterator entry = entries.begin(); entry != entries.end(); ++entry)
     {
         QString fileName = *entry;
         QString filePath = path + QDir::separator() + fileName;
@@ -77,23 +78,27 @@ void DBTree::loadChildren(const QString path, const QString key, QHash<QString, 
 
         QRegExp regex = QRegExp("[0-9a-f]{8}-([0-9a-f]{4}-){3}[0-9a-f]{12}.db");
 
-        if (!regex.exactMatch(fileName)) {
+        if (!regex.exactMatch(fileName))
+        {
             qDebug() << "ignoring invalid format db:" << filePath;
             continue;
         }
 
-        QString uuid = fileName.remove(36,3);
+        QString uuid = fileName.remove(36, 3);
         createChildDb(path, key, uuid, dbs);
     }
 }
 
 void DBTree::loadTree()
 {
-    if (dbPath == ":memory:") {
+    if (dbPath == ":memory:")
+    {
         mainDb = QSharedPointer<SimpleJsonDB>(new SimpleJsonDB(QString(""), QString(":memory:"), maxFlushDelay));
         mainDb->setFilterVmAndDomstoreKeys(true);
         dbRoot = mainDb->getValue();
-    } else {
+    }
+    else
+    {
         QString topDbPath = dbPath + QDir::separator() + "db";
         mainDb = QSharedPointer<SimpleJsonDB>(new SimpleJsonDB(QString(""), topDbPath, maxFlushDelay));
         mainDb->setFilterVmAndDomstoreKeys(true);
@@ -111,37 +116,48 @@ void DBTree::loadTree()
 // find existing db, creating one if it does not exist
 QSharedPointer<SimpleJsonDB> DBTree::lookupDb(const QStringList &splitPath, bool createEmpty)
 {
-    if (splitPath.length() < 2) {
+    if (splitPath.length() < 2)
+    {
         return mainDb;
     }
 
     QString topLevel = splitPath[0];
     QString secondLevel = splitPath[1];
 
-    if (topLevel == "dom-store") {
+    if (topLevel == "dom-store")
+    {
         QHash<QString, QSharedPointer<SimpleJsonDB>>::iterator i = domstoreDbs.find(secondLevel);
 
-        if (i != domstoreDbs.end() && i.key() == secondLevel) {
+        if (i != domstoreDbs.end() && i.key() == secondLevel)
+        {
             return i.value();
         }
 
-        if (createEmpty) {
+        if (createEmpty)
+        {
             return createChildDb(dbPath + QDir::separator() + "dom-store", topLevel, secondLevel, domstoreDbs);
-        } else {
+        }
+        else
+        {
             return QSharedPointer<SimpleJsonDB>();
         }
     }
 
-    if (topLevel == "vm") {
+    if (topLevel == "vm")
+    {
         QHash<QString, QSharedPointer<SimpleJsonDB>>::iterator i = vmsDbs.find(secondLevel);
 
-        if (i != vmsDbs.end() && i.key() == secondLevel) {
+        if (i != vmsDbs.end() && i.key() == secondLevel)
+        {
             return i.value();
         }
 
-        if (createEmpty) {
+        if (createEmpty)
+        {
             return createChildDb(dbPath + QDir::separator() + "vms", topLevel, secondLevel, vmsDbs);
-        } else {
+        }
+        else
+        {
             return QSharedPointer<SimpleJsonDB>();
         }
     }
@@ -157,23 +173,27 @@ QMPointer<QMJsonValue> DBTree::getValue(const QStringList &splitPath)
     qDebug() << "getValue(): splitPath:" << splitPath;
 
     // if it is top of tree, return the whole tree
-    if (splitPath.length() == 0) {
+    if (splitPath.length() == 0)
+    {
         return obj;
     }
 
     // traverse tree parts
     QStringList currentSplitPath;
-    for (const QString &part : splitPath) {
+    for (const QString &part : splitPath)
+    {
         currentSplitPath << part;
         qDebug() << "getValue: currentSplitPath:" << currentSplitPath << "type:" << obj->type();
 
         // make sure next level is an object
-        if (!obj->isObject()) {
+        if (!obj->isObject())
+        {
             qDebug() << "getValue() failed to traverse path:" << currentSplitPath;
             return QMPointer<QMJsonValue>();
         }
 
-        if (!obj->toObject()->contains(part)) {
+        if (!obj->toObject()->contains(part))
+        {
             qDebug() << "getValue() failed to traverse next path:" << currentSplitPath;
             return QMPointer<QMJsonValue>();
         }
@@ -193,7 +213,8 @@ void DBTree::setValue(const QStringList &splitPath, QMPointer<QMJsonValue> value
     lookupDb(splitPath, true);
 
     // if it is top of tree, ignore
-    if (splitPath.length() == 0) {
+    if (splitPath.length() == 0)
+    {
         qWarning("setValue: ignoring attempt to write to root");
         return;
     }
@@ -205,17 +226,20 @@ void DBTree::setValue(const QStringList &splitPath, QMPointer<QMJsonValue> value
     // make tree as required
     QStringList currentSplitPath;
     auto currentDb = mainDb;
-    for (const QString &part : parentList) {
+    for (const QString &part : parentList)
+    {
         currentSplitPath << part;
         qDebug() << "setValue: currentSplitPath:" << currentSplitPath << "type:" << obj->type();
 
-        if (!obj->toObject()->contains(part)) {
+        if (!obj->toObject()->contains(part))
+        {
             qDebug() << "setValue() inserting empty object";
             currentDb->acquireWriteLock();
             obj->toObject()->insert(part, QMPointer<QMJsonObject>(new QMJsonObject()));
             currentDb->releaseWriteLock();
 
-            if (!skipFlush) {
+            if (!skipFlush)
+            {
                 currentDb->queueFlush();
             }
         }
@@ -224,7 +248,8 @@ void DBTree::setValue(const QStringList &splitPath, QMPointer<QMJsonValue> value
         obj = obj->toObject()->value(part);
 
         // make sure next level is an object
-        if (!obj->isObject()) {
+        if (!obj->isObject())
+        {
             qDebug() << "setValue() failed to traverse path:" << currentSplitPath << "type:" << obj->type();
             return;
         }
@@ -238,7 +263,8 @@ void DBTree::setValue(const QStringList &splitPath, QMPointer<QMJsonValue> value
     obj->toObject()->insert(key, value);
     currentDb->releaseWriteLock();
 
-    if (!skipFlush) {
+    if (!skipFlush)
+    {
         currentDb->queueFlush();
     }
     return;
@@ -249,14 +275,16 @@ void DBTree::rmValue(const QStringList &splitPath)
     QMPointer<QMJsonValue> obj = dbRoot;
 
     // if it is top of tree, ignore
-    if (splitPath.length() == 0) {
+    if (splitPath.length() == 0)
+    {
         qWarning("rmValue: ignoring attempt to write to root");
         return;
     }
 
     // if db doesn't exist, nothing to do
     auto db = lookupDb(splitPath, false);
-    if (db.isNull()) {
+    if (db.isNull())
+    {
         return;
     }
 
@@ -266,19 +294,22 @@ void DBTree::rmValue(const QStringList &splitPath)
 
     // iterate through parent objects
     QStringList currentSplitPath;
-    for (const QString &part : parentList) {
+    for (const QString &part : parentList)
+    {
         currentSplitPath << part;
         qDebug() << "rmValue: currentSplitPath:" << currentSplitPath << "type:" << obj->type();
 
         // bail if parent doesn't exist
-        if (!obj->toObject()->contains(part)) {
+        if (!obj->toObject()->contains(part))
+        {
             return;
         }
 
         obj = obj->toObject()->value(part);
 
         // bail if next level is not an object
-        if (!obj->isObject()) {
+        if (!obj->isObject())
+        {
             qDebug() << "rmValue() failed to traverse path:" << currentSplitPath << "type:" << obj->type();
             return;
         }
@@ -288,12 +319,15 @@ void DBTree::rmValue(const QStringList &splitPath)
     obj->toObject()->remove(key);
 
     // unlink db if required
-    if (parentList.length() == 1) {
-        if (parentList.at(0) == "vm") {
+    if (parentList.length() == 1)
+    {
+        if (parentList.at(0) == "vm")
+        {
             vmsDbs.remove(key);
         }
 
-        if (parentList.at(0) == "dom-store") {
+        if (parentList.at(0) == "dom-store")
+        {
             domstoreDbs.remove(key);
         }
     }
@@ -312,7 +346,8 @@ void DBTree::mergeValue(const QStringList &splitPath, QMPointer<QMJsonValue> val
     lookupDb(splitPath, true);
 
     // if it is top of tree, ignore
-    if (splitPath.length() == 0) {
+    if (splitPath.length() == 0)
+    {
         qWarning("setValue: ignoring attempt to write to root");
         return;
     }
@@ -322,12 +357,14 @@ void DBTree::mergeValue(const QStringList &splitPath, QMPointer<QMJsonValue> val
     // iterate through parent objects
     QStringList currentSplitPath;
     auto currentDb = mainDb;
-    for (const QString &part : parentList) {
+    for (const QString &part : parentList)
+    {
         currentSplitPath << part;
         qDebug() << "mergeValue: currentSplitPath:" << currentSplitPath << "type:" << obj->type();
 
         // create missing children nodes
-        if (!obj->toObject()->contains(part)) {
+        if (!obj->toObject()->contains(part))
+        {
             currentDb->acquireWriteLock();
             obj->toObject()->insert(part, QMPointer<QMJsonObject>(new QMJsonObject()));
             currentDb->releaseWriteLock();
@@ -338,7 +375,8 @@ void DBTree::mergeValue(const QStringList &splitPath, QMPointer<QMJsonValue> val
         obj = obj->toObject()->value(part);
 
         // bail if next level is not an object
-        if (!obj->isObject()) {
+        if (!obj->isObject())
+        {
             qDebug() << "mergeValue() failed to traverse path:" << currentSplitPath << "type:" << obj->type();
             return;
         }
@@ -361,11 +399,13 @@ void DBTree::exitCleanup()
 
     mainDb->forcePendingFlush();
 
-    for (auto db : vmsDbs) {
+    for (auto db : vmsDbs)
+    {
         db->forcePendingFlush();
     }
 
-    for (auto db : domstoreDbs) {
+    for (auto db : domstoreDbs)
+    {
         db->forcePendingFlush();
     }
 

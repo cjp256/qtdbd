@@ -97,9 +97,12 @@ public Q_SLOTS: // METHODS
 Q_SIGNALS: // SIGNALS
 };
 
-namespace com {
-namespace citrix {
-namespace xenclient {
+namespace com
+{
+namespace citrix
+{
+namespace xenclient
+{
 typedef ::ComCitrixXenclientDbInterface db;
 }
 }

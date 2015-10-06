@@ -55,7 +55,8 @@ void parseCommandLine(QCoreApplication &app, CmdLineOptions *opts)
     opts->debuggingEnabled = parser.isSet(debugOption);
 
     const QStringList posArgs = parser.positionalArguments();
-    if (posArgs.size() < 1) {
+    if (posArgs.size() < 1)
+    {
         qFatal("invalid arguments");
         exit(1);
     }
@@ -78,7 +79,8 @@ int main(int argc, char *argv[])
 
     parseCommandLine(app, &g_cmdLineOptions);
 
-    if (!QDBusConnection::systemBus().isConnected()) {
+    if (!QDBusConnection::systemBus().isConnected())
+    {
         qFatal("failed to connect to dbus");
         exit(1);
     }
@@ -90,7 +92,8 @@ int main(int argc, char *argv[])
     reply.waitForFinished();
 
     // if it's valid, print it
-    if (!reply.isValid()) {
+    if (!reply.isValid())
+    {
         qFatal("dbus not responding!");
         exit(1);
     }

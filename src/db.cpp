@@ -40,9 +40,12 @@ Db::~Db()
 
 const QString Db::getSenderId()
 {
-    if (lookupSenderId) {
+    if (lookupSenderId)
+    {
         return message().service();
-    } else {
+    }
+    else
+    {
         return QString("");
     }
 }
@@ -52,15 +55,18 @@ int Db::getSenderDomId()
     const QString senderId = message().service();
 
     // use only domid == 0 if lookup is disabled
-    if (!lookupSenderId) {
+    if (!lookupSenderId)
+    {
         return 0;
     }
 
     QDBusInterface iface("org.freedesktop.DBus", "/org/freedesktop/DBus", "org.freedesktop.DBus", QDBusConnection::systemBus());
-    if (iface.isValid()) {
+    if (iface.isValid())
+    {
         QDBusPendingReply<int> reply = iface.asyncCall("GetConnectionDOMID", senderId);
         reply.waitForFinished();
-        if (reply.isValid()) {
+        if (reply.isValid())
+        {
             return reply.value();
         }
 
@@ -76,9 +82,11 @@ QString Db::getUuidFromDomId(int domid)
 {
     unsigned int len;
 
-    if (xs == NULL) {
+    if (xs == NULL)
+    {
         xs = xs_daemon_open();
-        if (xs == NULL) {
+        if (xs == NULL)
+        {
             qWarning() << "unable to open xenstore";
             return QString();
         }
@@ -91,7 +99,8 @@ QString Db::getUuidFromDomId(int domid)
 
     char *uuidPath = (char *)xs_read(xs, 0, cpa, &len);
 
-    if (uuidPath == NULL) {
+    if (uuidPath == NULL)
+    {
         qWarning() << "unable to read vm path from xenstore for:" << vmPathQS;
         return QString();
     }
@@ -107,7 +116,8 @@ QString Db::getUuidFromDomId(int domid)
 
     char *uuid = (char *)xs_read(xs, 0, cpa, &len);
 
-    if (uuid == NULL) {
+    if (uuid == NULL)
+    {
         qWarning() << "unable to read uuid from xenstore for:" << uuidPathQS;
         return QString();
     }
@@ -126,7 +136,8 @@ bool Db::senderPathSplit(QString path, QStringList &splitPath)
     splitPath.clear();
     splitPath.append(path.split("/", QString::SplitBehavior::SkipEmptyParts));
 
-    if (!lookupSenderId) {
+    if (!lookupSenderId)
+    {
         return true;
     }
 
@@ -134,12 +145,14 @@ bool Db::senderPathSplit(QString path, QStringList &splitPath)
     int domid = getSenderDomId();
 
     // return invalid string on error
-    if (domid < 0) {
+    if (domid < 0)
+    {
         qWarning() << "unable to lookup sender domid";
         return false;
     }
 
-    if (domid == 0) {
+    if (domid == 0)
+    {
         return true;
     }
 
@@ -156,14 +169,16 @@ QString Db::dump(const QString &path)
 
     QStringList split;
 
-    if (!senderPathSplit(path, split)) {
+    if (!senderPathSplit(path, split))
+    {
         sendErrorReply(QDBusError::InternalError, "unable to lookup sender domid");
         return "";
     }
 
     QMPointer<QMJsonValue> value = dbTree->getValue(split);
 
-    if (value.isNull()) {
+    if (value.isNull())
+    {
         qDebug() << "dump() no object found";
         return "null";
     }
@@ -176,7 +191,8 @@ bool Db::exists(const QString &path)
     qDebug() << getSenderId() << " exists(" << path << ")";
 
     QStringList split;
-    if (!senderPathSplit(path, split)) {
+    if (!senderPathSplit(path, split))
+    {
         sendErrorReply(QDBusError::InternalError, "unable to lookup sender domid");
         return false;
     }
@@ -191,14 +207,16 @@ void Db::inject(const QString &path, const QString &value)
     qDebug() << getSenderId() << " inject(" << path << ", " << value << ")";
 
     QStringList split;
-    if (!senderPathSplit(path, split)) {
+    if (!senderPathSplit(path, split))
+    {
         sendErrorReply(QDBusError::InternalError, "unable to lookup sender domid");
         return;
     }
 
     auto jsonValue = QMPointer<QMJsonValue>(QMJsonValue::fromJson(value));
 
-    if (jsonValue.isNull()) {
+    if (jsonValue.isNull())
+    {
         sendErrorReply(QDBusError::InternalError, "invalid json value");
         return;
     }
@@ -211,14 +229,16 @@ QStringList Db::list(const QString &path)
     qDebug() << getSenderId() << " list(" << path << ")";
 
     QStringList split;
-    if (!senderPathSplit(path, split)) {
+    if (!senderPathSplit(path, split))
+    {
         sendErrorReply(QDBusError::InternalError, "unable to lookup sender domid");
         return QStringList();
     }
 
     QMPointer<QMJsonValue> value = dbTree->getValue(split);
 
-    if (value.isNull() || !value->isObject()) {
+    if (value.isNull() || !value->isObject())
+    {
         return QStringList();
     }
 
@@ -230,39 +250,47 @@ QString Db::read(const QString &path)
     qDebug() << getSenderId() << " read(" << path << ")";
 
     QStringList split;
-    if (!senderPathSplit(path, split)) {
+    if (!senderPathSplit(path, split))
+    {
         sendErrorReply(QDBusError::InternalError, "unable to lookup sender domid");
         return "";
     }
 
     QMPointer<QMJsonValue> value = dbTree->getValue(split);
 
-    if (value.isNull()) {
+    if (value.isNull())
+    {
         qDebug() << "read() no object found";
         return "";
     }
 
-    if (value->isBool()) {
-        if (value->toBool()) {
+    if (value->isBool())
+    {
+        if (value->toBool())
+        {
             return "true";
         }
 
         return "false";
     }
 
-    if (value->isString()) {
+    if (value->isString())
+    {
         return value->toString();
     }
 
-    if (value->isDouble()) {
+    if (value->isDouble())
+    {
         return QString::number(value->toDouble());
     }
 
-    if (value->isObject() || value->isArray()) {
+    if (value->isObject() || value->isArray())
+    {
         return "";
     }
 
-    if (value->isNull()) {
+    if (value->isNull())
+    {
         return "null";
     }
 
@@ -284,7 +312,8 @@ void Db::rm(const QString &path)
 
     QStringList split;
 
-    if (!senderPathSplit(path, split)) {
+    if (!senderPathSplit(path, split))
+    {
         sendErrorReply(QDBusError::InternalError, "unable to lookup sender domid");
         return;
     }
@@ -298,14 +327,16 @@ void Db::write(const QString &path, const QString &value)
 
     QStringList split;
 
-    if (!senderPathSplit(path, split)) {
+    if (!senderPathSplit(path, split))
+    {
         sendErrorReply(QDBusError::InternalError, "unable to lookup sender domid");
         return;
     }
 
     auto jsonValue = QMPointer<QMJsonValue>(new QMJsonValue(value));
 
-    if (jsonValue.isNull()) {
+    if (jsonValue.isNull())
+    {
         sendErrorReply(QDBusError::InternalError, "invalid json value");
         return;
     }

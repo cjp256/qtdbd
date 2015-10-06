@@ -43,12 +43,14 @@ bool TestDBD::copyDirectory(const QString &srcPath, const QString &dstPath)
     qDebug() << "copying: " << srcDir.absoluteFilePath(".") << " to: " << dstDir.absoluteFilePath(".");
 
     // make sure specified destination directory is created
-    if (!dstDir.exists()) {
+    if (!dstDir.exists())
+    {
         dstDir.mkpath(".");
     }
 
     // copy over all files, and recursively copy directories
-    for (const QString &fileName : srcDir.entryList(QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot | QDir::Hidden | QDir::System)) {
+    for (const QString &fileName : srcDir.entryList(QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot | QDir::Hidden | QDir::System))
+    {
         const QString newSrcPath = srcPath + QDir::separator() + fileName;
         const QString newDstPath = dstPath + QDir::separator() + fileName;
 
@@ -56,12 +58,17 @@ bool TestDBD::copyDirectory(const QString &srcPath, const QString &dstPath)
 
         QFileInfo srcFileInfo(newSrcPath);
 
-        if (srcFileInfo.isDir()) {
-            if (!copyDirectory(newSrcPath, newDstPath)) {
+        if (srcFileInfo.isDir())
+        {
+            if (!copyDirectory(newSrcPath, newDstPath))
+            {
                 return false;
             }
-        } else {
-            if (!QFile::copy(newSrcPath, newDstPath)) {
+        }
+        else
+        {
+            if (!QFile::copy(newSrcPath, newDstPath))
+            {
                 return false;
             }
         }
@@ -75,7 +82,8 @@ QString TestDBD::prepTestDB(const QString &dbPath)
 
     dstDir.setAutoRemove(false);
 
-    if (!copyDirectory(dbPath, dstDir.path())) {
+    if (!copyDirectory(dbPath, dstDir.path()))
+    {
         return QString();
     }
 

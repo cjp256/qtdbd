@@ -51,15 +51,18 @@ QString SimpleJsonDB::jsonString()
     acquireWriteLock();
     QString dbString = db->toJson();
 
-    if (filterVmAndDomstoreKeys) {
+    if (filterVmAndDomstoreKeys)
+    {
         auto filteredValue = QMJsonValue::fromJson(dbString);
 
-        if (filteredValue.isNull()) {
+        if (filteredValue.isNull())
+        {
             qFatal("unable to convert db string to qmjsonvalue!");
             exit(1);
         }
 
-        if (!filteredValue->isObject()) {
+        if (!filteredValue->isObject())
+        {
             qFatal("db qmjsonvalue is not an object!");
             exit(1);
         }
@@ -102,15 +105,18 @@ void SimpleJsonDB::readFromDisk()
 {
     acquireWriteLock();
 
-    if (path != ":memory:") {
+    if (path != ":memory:")
+    {
         QFile dbFile(path);
 
-        if (dbFile.exists()) {
+        if (dbFile.exists())
+        {
             db = QMJsonValue::fromJsonFile(path);
             qDebug() << "db from json file:" << db;
 
             // XXX: fix desired https://github.com/QtMark/qmjson/issues/9
-            if (db.isNull() || !db->isObject()) {
+            if (db.isNull() || !db->isObject())
+            {
                 // save off bad db file for later review, but do not abort
                 // this is preferable than failing to boot if dbd doesn't come up
                 qCritical() << "failed to read db:" << path << "malformed?" << dbFile.readAll();
@@ -121,7 +127,8 @@ void SimpleJsonDB::readFromDisk()
     }
 
     // if no json file exists, create empty object
-    if (db.isNull() || !db->isObject()) {
+    if (db.isNull() || !db->isObject())
+    {
         qDebug() << "creating default empty object for db:" << path;
         auto obj = QMPointer<QMJsonObject>(new QMJsonObject());
         db = QMPointer<QMJsonValue>(new QMJsonValue(obj));
@@ -135,23 +142,30 @@ void SimpleJsonDB::flush()
     qDebug() << "flush for db:" << path;
 
     // skip flush if delay is -1
-    if (maxFlushDelay == -1 || path == ":memory:") {
+    if (maxFlushDelay == -1 || path == ":memory:")
+    {
         qDebug() << "skipping flush for:" << jsonString();
         return;
     }
 
     QString dbString = jsonString();
 
-    if (dbString.size() <= 0) {
+    if (dbString.size() <= 0)
+    {
         // db is empty, remove old db file (if it exists)
         QFile file(path);
         file.remove();
-    } else {
+    }
+    else
+    {
         // save json file with atomic QSaveFile
         QSaveFile file(path);
-        if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
+        {
             qWarning() << "unable to write to db:" << path;
-        } else {
+        }
+        else
+        {
             QTextStream outStream(&file);
             outStream << dbString;
             file.commit();
@@ -164,12 +178,14 @@ void SimpleJsonDB::flush()
 
 void SimpleJsonDB::queueFlush()
 {
-    if (maxFlushDelay == 0) {
+    if (maxFlushDelay == 0)
+    {
         qDebug() << "immediate flush for db:" << path;
         return flush();
     }
 
-    if (maxFlushDelay > 0 && !flushTimer.isActive()) {
+    if (maxFlushDelay > 0 && !flushTimer.isActive())
+    {
         qDebug() << "queue flush for db:" << path;
         flushTimer.start(maxFlushDelay);
     }
@@ -177,7 +193,8 @@ void SimpleJsonDB::queueFlush()
 
 void SimpleJsonDB::forcePendingFlush()
 {
-    if (flushTimer.isActive()) {
+    if (flushTimer.isActive())
+    {
         qDebug() << "force active pending flush for db:" << path;
         flushTimer.stop();
         flush();

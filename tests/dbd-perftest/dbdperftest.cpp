@@ -94,19 +94,23 @@ void DbdPerfTest::parseCommandLine()
 
     parser.process(*app);
 
-    if (parser.isSet(readIntervalOption)) {
+    if (parser.isSet(readIntervalOption))
+    {
         readInterval = parser.value(readIntervalOption).toDouble();
     }
 
-    if (parser.isSet(writeIntervalOption)) {
+    if (parser.isSet(writeIntervalOption))
+    {
         writeInterval = parser.value(writeIntervalOption).toDouble();
     }
 
-    if (parser.isSet(readIterationsOption)) {
+    if (parser.isSet(readIterationsOption))
+    {
         readIterations = parser.value(readIterationsOption).toULongLong();
     }
 
-    if (parser.isSet(numberVmsOption)) {
+    if (parser.isSet(numberVmsOption))
+    {
         numberVms = parser.value(numberVmsOption).toULongLong();
     }
 

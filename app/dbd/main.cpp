@@ -93,15 +93,21 @@ void parseCommandLine(QCommandLineParser &parser, QCoreApplication &app, CmdLine
     opts->consoleLoggingEnabled = parser.isSet(consoleLogOption);
     opts->sessionBusEnabled = parser.isSet(sessionBusOption);
 
-    if (parser.isSet(maxDbFlushTimeOption)) {
+    if (parser.isSet(maxDbFlushTimeOption))
+    {
         opts->dbMaxDelayMillis = parser.value(maxDbFlushTimeOption).toDouble();
-    } else {
+    }
+    else
+    {
         opts->dbMaxDelayMillis = 3000;
     }
 
-    if (parser.isSet(dbDirectoryOption)) {
+    if (parser.isSet(dbDirectoryOption))
+    {
         opts->dbBaseDirectoryPath = parser.value(dbDirectoryOption);
-    } else {
+    }
+    else
+    {
         opts->dbBaseDirectoryPath = QString("/config");
     }
 
@@ -135,16 +141,19 @@ int main(int argc, char *argv[])
 
     parseCommandLine(parser, app, &g_cmdLineOptions);
 
-    if (!g_cmdLineOptions.sessionBusEnabled) {
+    if (!g_cmdLineOptions.sessionBusEnabled)
+    {
         bus = QDBusConnection::systemBus();
     }
 
-    if (!bus.isConnected()) {
+    if (!bus.isConnected())
+    {
         qFatal("failed to connect to dbus");
         exit(1);
     }
 
-    if (!bus.registerService("com.citrix.xenclient.db")) {
+    if (!bus.registerService("com.citrix.xenclient.db"))
+    {
         qFatal("failed to register service");
         exit(2);
     }
@@ -157,7 +166,8 @@ int main(int argc, char *argv[])
 
     qDebug() << "registered and listening on dbus...";
 
-    if (!g_cmdLineOptions.foregroundEnabled) {
+    if (!g_cmdLineOptions.foregroundEnabled)
+    {
         daemon(1, 0);
     }
 
