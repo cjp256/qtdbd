@@ -86,7 +86,6 @@ void lsObject(QMPointer<QMJsonValue> value, QStringList &outStringList, QString 
 
     if (value->isBool())
     {
-        //outstr.append("%s%s = \"%s\"" % (" " * level, key_name, str(obj)))
         if (value->toBool())
         {
             out = QString(level, QChar(' ')) + key + " = \"true\"";
