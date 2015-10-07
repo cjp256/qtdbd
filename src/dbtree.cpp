@@ -25,9 +25,10 @@
 #include <QRegExp>
 #include <qmjson.h>
 
-DBTree::DBTree(QString dbPath, int maxFlushDelayMillis) : dbRoot(), dbPath(dbPath), maxFlushDelay(maxFlushDelayMillis), mainDb(nullptr), dbWriterThread(this)
+DBTree::DBTree(QString dbPath, int maxFlushDelayMillis) : dbRoot(), dbPath(dbPath), maxFlushDelay(maxFlushDelayMillis), mainDb(nullptr), dbWriterThread(this), flushThread(NULL)
 {
     qDebug() << "DBTree init(" << dbPath << "," << maxFlushDelay << ")";
+    flushThread = new QThread();
     loadTree();
 }
 
@@ -45,6 +46,7 @@ QSharedPointer<SimpleJsonDB> DBTree::createChildDb(const QString parentPath, con
     qDebug() << "creating db in:" << topLevel << " for uuid:" << secondLevel << "at path:" << path;
 
     auto db = QSharedPointer<SimpleJsonDB>(new SimpleJsonDB(vPath, path, maxFlushDelay));
+    mainDb->moveToThread(flushThread);
     mainDb->acquireWriteLock();
     dbs.insert(secondLevel, db);
     mainDb->releaseWriteLock();
@@ -94,6 +96,7 @@ void DBTree::loadTree()
     if (dbPath == ":memory:")
     {
         mainDb = QSharedPointer<SimpleJsonDB>(new SimpleJsonDB(QString(""), QString(":memory:"), maxFlushDelay));
+        mainDb->moveToThread(flushThread);
         mainDb->setFilterVmAndDomstoreKeys(true);
         dbRoot = mainDb->getValue();
     }
@@ -101,6 +104,7 @@ void DBTree::loadTree()
     {
         QString topDbPath = dbPath + QDir::separator() + "db";
         mainDb = QSharedPointer<SimpleJsonDB>(new SimpleJsonDB(QString(""), topDbPath, maxFlushDelay));
+        mainDb->moveToThread(flushThread);
         mainDb->setFilterVmAndDomstoreKeys(true);
         dbRoot = mainDb->getValue();
 

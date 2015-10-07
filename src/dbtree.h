@@ -55,6 +55,7 @@ private:
     QThread dbWriterThread;
     QHash<QString, QSharedPointer<SimpleJsonDB>> vmsDbs;
     QHash<QString, QSharedPointer<SimpleJsonDB>> domstoreDbs;
+    QThread *flushThread;
 };
 
 #endif // DBTREE_H
