@@ -53,6 +53,9 @@ public:
 public slots:
     void flush();
 
+Q_SIGNALS:
+    void flushed();
+
 private:
     QMPointer<QMJsonValue> db;
     QString vpath;

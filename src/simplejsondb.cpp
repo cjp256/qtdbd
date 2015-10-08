@@ -150,7 +150,7 @@ void SimpleJsonDB::flush()
 
     QString dbString = jsonString();
 
-    if (dbString.size() <= 0)
+    if (dbString == "{}")
     {
         // db is empty, remove old db file (if it exists)
         QFile file(path);
@@ -174,6 +174,8 @@ void SimpleJsonDB::flush()
         qInfo() << "flushed db:" << path;
 #endif
     }
+
+    emit flushed();
 }
 
 void SimpleJsonDB::queueFlush()
