@@ -319,27 +319,36 @@ void DBTree::rmValue(const QStringList &splitPath)
         }
     }
 
+    // empty out object, in case it is a simplejsondb tree node
     db->acquireWriteLock();
-    obj->toObject()->remove(key);
-
-    // unlink db if required
-    if (parentList.length() == 1)
+    auto droppedObj = obj->toObject()->value(key);
+    if (droppedObj->isObject())
     {
-        if (parentList.at(0) == "vm")
-        {
-            vmsDbs.remove(key);
-        }
-
-        if (parentList.at(0) == "dom-store")
-        {
-            domstoreDbs.remove(key);
-        }
+        droppedObj->toObject()->clear();
     }
-
     db->releaseWriteLock();
 
-    // notify db to flush
-    db->queueFlush();
+    auto parentDb = lookupDb(parentList, false);
+    parentDb->acquireWriteLock();
+    obj->toObject()->remove(key);
+    parentDb->releaseWriteLock();
+
+    // unlink db if required, forcing immediate flush
+    if (parentList.length() == 1 && parentList.at(0) == "vm")
+    {
+        db->flush();
+        vmsDbs.remove(key);
+
+    }
+    else if (parentList.length() == 1 && parentList.at(0) == "dom-store")
+    {
+        db->flush();
+        domstoreDbs.remove(key);
+    }
+    else
+    {
+        db->queueFlush();
+    }
 }
 
 void DBTree::mergeValue(const QStringList &splitPath, QMPointer<QMJsonValue> value)

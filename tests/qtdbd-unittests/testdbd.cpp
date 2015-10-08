@@ -773,4 +773,51 @@ void TestDBD::testDb2WriteDomstoreQueuedFlush()
     QCOMPARE(filestr, dumpstr);
 }
 
+void TestDBD::testDb2WriteRmDomstore()
+{
+    QString testSrcDir = QString("tests") + QDir::separator() + QString("db-2");
+    QString testDstDir = prepTestDB(testSrcDir);
+
+    qDebug() << "testing database copied to: " << testDstDir;
+
+    DBTree *dbTree = new DBTree(testDstDir, 1);
+    Db *db = new Db(dbTree, false);
+    new DbInterfaceAdaptor(db);
+
+    QCOMPARE(db->exists(""), true);
+
+    db->write("/dom-store/00000000-0000-0000-0000-000000000002/somekey", "somevalue");
+    QCOMPARE(db->exists("/dom-store/00000000-0000-0000-0000-000000000002/somekey"), true);
+    QCOMPARE(db->exists("dom-store/00000000-0000-0000-0000-000000000002/somekey"), true);
+
+    auto dumpval = QMJsonValue::fromJson(db->dump("/dom-store/00000000-0000-0000-0000-000000000002"));
+    auto dumpstr = dumpval->toJson(QMJsonFormat_Optimized, QMJsonSort_CaseSensitive);
+
+    QCOMPARE(QString("{\"somekey\":\"somevalue\"}"), dumpstr);
+    QCOMPARE(dumpval->toObject()->value("somekey")->toString(), QString("somevalue"));
+
+    QTest::qWait(500);
+    QString dbFilePath(testDstDir + QDir::separator() + "dom-store" + QDir::separator() + "00000000-0000-0000-0000-000000000002.db");
+
+    auto fileval = QMJsonValue::fromJsonFile(dbFilePath);
+    auto filestr = fileval->toJson(QMJsonFormat_Optimized, QMJsonSort_CaseSensitive);
+    QCOMPARE(filestr, dumpstr);
+
+    QCOMPARE(db->exists("dom-store/00000000-0000-0000-0000-000000000002/somekey"), true);
+    QCOMPARE(db->exists("dom-store/00000000-0000-0000-0000-000000000002"), true);
+
+    // remove domstore
+    db->rm("/dom-store/00000000-0000-0000-0000-000000000002");
+
+    QCOMPARE(db->exists("dom-store/00000000-0000-0000-0000-000000000002/somekey"), false);
+    QCOMPARE(db->exists("dom-store/00000000-0000-0000-0000-000000000002"), false);
+
+    QTest::qWait(500);
+
+    QFile::exists(dbFilePath);
+    qDebug() << "file path:" << dbFilePath << "exists:" << QFile::exists(dbFilePath);
+    QCOMPARE(QFile::exists(dbFilePath), false);
+}
+
+
 QTEST_MAIN(TestDBD)
