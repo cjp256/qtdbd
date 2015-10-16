@@ -89,7 +89,7 @@ QString SimpleJsonDB::jsonString()
 
         filteredValue->toObject()->remove("vm");
         filteredValue->toObject()->remove("dom-store");
-        dbString = filteredValue->toJson();
+        dbString = filteredValue->toJson(QMJsonFormat_Pretty, QMJsonSort_CaseSensitive);
     }
 
     releaseWriteLock();
