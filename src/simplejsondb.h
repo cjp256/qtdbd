@@ -42,8 +42,6 @@ public:
     void releaseWriteLock();
     void setFilterVmAndDomstoreKeys(bool filter);
     void setMaxFlushDelay(int maxFlushDelayMillis);
-    void setWorkerThread(QThread *workerThread);
-    void queueFlush();
     void forcePendingFlush();
 
     QString jsonString();
@@ -51,9 +49,11 @@ public:
     QString getPath();
 
 public slots:
+    void queueFlush();
     void flush();
 
 Q_SIGNALS:
+    void startFlushTimer();
     void flushed();
 
 private:

@@ -48,6 +48,9 @@ public:
 public slots:
     void exitCleanup();
 
+Q_SIGNALS:
+    void queueFlush();
+
 private:
     QString dbPath;
     int maxFlushDelay;

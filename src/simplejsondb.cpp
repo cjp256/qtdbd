@@ -24,11 +24,21 @@
 #include <QtDebug>
 #include <qmjson.h>
 
-SimpleJsonDB::SimpleJsonDB(const QString vpath, const QString path, int maxFlushDelayMillis) : db(), vpath(vpath), path(path), writeLock(), flushTimer(0), maxFlushDelay(maxFlushDelayMillis), skipDisk(false), filterVmAndDomstoreKeys(false)
+SimpleJsonDB::SimpleJsonDB(const QString vpath, const QString path, int maxFlushDelayMillis) : db(), vpath(vpath), path(path), writeLock(), flushTimer(this), maxFlushDelay(maxFlushDelayMillis), skipDisk(false), filterVmAndDomstoreKeys(false)
 {
     flushTimer.setSingleShot(true);
+    flushTimer.setInterval(maxFlushDelay);
+
+    // connect timer up to flush function
     QObject::connect(&flushTimer, &QTimer::timeout, this, &SimpleJsonDB::flush);
+
+    // connect our startFlushTimer signal to start the timer (so main thread can emit this signal)
+    // must use SIGNAL() SLOT() style because start() is overloaded
+    QObject::connect(this, SIGNAL(startFlushTimer()), &flushTimer, SLOT(start()));
+
+    // read in db from disk
     readFromDisk();
+
     qDebug() << db;
 }
 
@@ -84,11 +94,7 @@ void SimpleJsonDB::setFilterVmAndDomstoreKeys(bool filter)
 void SimpleJsonDB::setMaxFlushDelay(int maxFlushDelayMillis)
 {
     maxFlushDelay = maxFlushDelayMillis;
-}
-
-void SimpleJsonDB::setWorkerThread(QThread *workerThread)
-{
-    flushTimer.moveToThread(workerThread);
+    flushTimer.setInterval(maxFlushDelay);
 }
 
 QMPointer<QMJsonValue> SimpleJsonDB::getValue()
@@ -139,7 +145,7 @@ void SimpleJsonDB::readFromDisk()
 
 void SimpleJsonDB::flush()
 {
-    qDebug() << "flush for db:" << path;
+    qDebug() << "flush for db:" << path << "thread:" << QThread::currentThread();
 
     // skip flush if delay is -1
     if (maxFlushDelay == -1 || path == ":memory:")
@@ -188,8 +194,8 @@ void SimpleJsonDB::queueFlush()
 
     if (maxFlushDelay > 0 && !flushTimer.isActive())
     {
-        qDebug() << "queue flush for db:" << path;
-        flushTimer.start(maxFlushDelay);
+        qDebug() << "queue flush for db:" << path << "millis:" << maxFlushDelay;
+        emit startFlushTimer();
     }
 }
 

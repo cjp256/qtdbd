@@ -29,11 +29,15 @@ DBTree::DBTree(QString dbPath, int maxFlushDelayMillis) : dbRoot(), dbPath(dbPat
 {
     qDebug() << "DBTree init(" << dbPath << "," << maxFlushDelay << ")";
     flushThread = new QThread();
+    connect(flushThread, &QThread::finished, flushThread, &QObject::deleteLater);
+    flushThread->start();
     loadTree();
 }
 
 DBTree::~DBTree()
 {
+    flushThread->quit();
+    flushThread->wait();
 }
 
 QSharedPointer<SimpleJsonDB> DBTree::createChildDb(const QString parentPath, const QString topLevel, const QString secondLevel, QHash<QString, QSharedPointer<SimpleJsonDB>> &dbs)
@@ -46,7 +50,7 @@ QSharedPointer<SimpleJsonDB> DBTree::createChildDb(const QString parentPath, con
     qDebug() << "creating db in:" << topLevel << " for uuid:" << secondLevel << "at path:" << path;
 
     auto db = QSharedPointer<SimpleJsonDB>(new SimpleJsonDB(vPath, path, maxFlushDelay));
-    mainDb->moveToThread(flushThread);
+    db->moveToThread(flushThread);
     mainDb->acquireWriteLock();
     dbs.insert(secondLevel, db);
     mainDb->releaseWriteLock();
@@ -269,6 +273,7 @@ void DBTree::setValue(const QStringList &splitPath, QMPointer<QMJsonValue> value
 
     if (!skipFlush)
     {
+        qDebug() << "flush thread:" << flushThread;
         currentDb->queueFlush();
     }
     return;
