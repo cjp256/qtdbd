@@ -141,6 +141,11 @@ int main(int argc, char *argv[])
 
     parseCommandLine(parser, app, &g_cmdLineOptions);
 
+    if (!g_cmdLineOptions.foregroundEnabled)
+    {
+        daemon(1, 0);
+    }
+
     if (!g_cmdLineOptions.sessionBusEnabled)
     {
         bus = QDBusConnection::systemBus();
@@ -165,11 +170,6 @@ int main(int argc, char *argv[])
     bus.registerObject("/", db, QDBusConnection::ExportAllSlots);
 
     qDebug() << "registered and listening on dbus...";
-
-    if (!g_cmdLineOptions.foregroundEnabled)
-    {
-        daemon(1, 0);
-    }
 
     qDebug() << dbTree->dbRoot->toJson();
 
