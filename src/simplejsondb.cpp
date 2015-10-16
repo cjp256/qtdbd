@@ -35,11 +35,10 @@ SimpleJsonDB::SimpleJsonDB(const QString vpath, const QString path, int maxFlush
         qFatal("failed to connect timeout() to flush()");
     }
 
-    // connect our startFlushTimer signal to start the timer (so main thread can emit this signal)
-    // must use SIGNAL() SLOT() style because start() is overloaded
-    if (!QObject::connect(this, SIGNAL(startFlushTimer()), &flushTimer, SLOT(start())))
+    // inter-thread signal so main thread can trigger the timer start
+    if (!QObject::connect(this, &SimpleJsonDB::signalFlushTimer, this, &SimpleJsonDB::startFlushTimer))
     {
-        qFatal("failed to startFlushTimer() to start()");
+        qFatal("failed to connect signalFlushTimer() to startFlushTimer()");
     }
 
     // read in db from disk
@@ -50,6 +49,12 @@ SimpleJsonDB::SimpleJsonDB(const QString vpath, const QString path, int maxFlush
 
 SimpleJsonDB::~SimpleJsonDB()
 {
+}
+
+void SimpleJsonDB::startFlushTimer()
+{
+    qDebug() << "startFlushTimer: starting timer...";
+    flushTimer.start(maxFlushDelay);
 }
 
 void SimpleJsonDB::acquireWriteLock()
@@ -201,7 +206,7 @@ void SimpleJsonDB::queueFlush()
     if (maxFlushDelay > 0 && !flushTimer.isActive())
     {
         qDebug() << "queue flush for db:" << path << "millis:" << maxFlushDelay;
-        emit startFlushTimer();
+        emit signalFlushTimer();
     }
 }
 

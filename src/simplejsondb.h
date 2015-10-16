@@ -49,11 +49,12 @@ public:
     QString getPath();
 
 public slots:
+    void startFlushTimer();
     void queueFlush();
     void flush();
 
 Q_SIGNALS:
-    void startFlushTimer();
+    void signalFlushTimer();
     void flushed();
 
 private:
