@@ -69,7 +69,7 @@ void SimpleJsonDB::releaseWriteLock()
 QString SimpleJsonDB::jsonString()
 {
     acquireWriteLock();
-    QString dbString = db->toJson();
+    QString dbString = db->toJson(QMJsonFormat_Pretty, QMJsonSort_CaseSensitive);
 
     if (filterVmAndDomstoreKeys)
     {
@@ -173,6 +173,8 @@ void SimpleJsonDB::flush()
     }
     else
     {
+        dbString += '\n';
+
         // save json file with atomic QSaveFile
         QSaveFile file(path);
         if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
