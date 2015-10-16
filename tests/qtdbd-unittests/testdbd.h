@@ -47,6 +47,8 @@ private slots:
     void testDb2WriteDomstore();
     void testDb2WriteDomstoreQueuedFlush();
     void testDb2WriteRmDomstore();
+    void testDb3WriteBaseDb();
+    void testDb3WriteDbQueuedFlush();
 };
 
 #endif // TESTDBD_H

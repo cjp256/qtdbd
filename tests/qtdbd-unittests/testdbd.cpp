@@ -130,60 +130,60 @@ void TestDBD::testDbTreeBasicGetSet()
 
 void TestDBD::testDbBasicReadWrite()
 {
-    DBTree *dbTree = new DBTree(":memory:", 0);
-    Db *db = new Db(dbTree, false);
-    new DbInterfaceAdaptor(db);
+    DBTree dbTree(":memory:", 0);
+    Db db(&dbTree, false);
+    new DbInterfaceAdaptor(&db);
 
-    QCOMPARE(db->read("/"), QString(""));
-    QCOMPARE(db->read(""), QString(""));
+    QCOMPARE(db.read("/"), QString(""));
+    QCOMPARE(db.read(""), QString(""));
 
-    QCOMPARE(db->read("/notexist"), QString(""));
-    QCOMPARE(db->read("notexist"), QString(""));
+    QCOMPARE(db.read("/notexist"), QString(""));
+    QCOMPARE(db.read("notexist"), QString(""));
 
-    QCOMPARE(db->read("/does/notexist"), QString(""));
-    QCOMPARE(db->read("does/notexist"), QString(""));
+    QCOMPARE(db.read("/does/notexist"), QString(""));
+    QCOMPARE(db.read("does/notexist"), QString(""));
 
-    QCOMPARE(db->read("/does/not/exist"), QString(""));
-    QCOMPARE(db->read("does/not/exist"), QString(""));
+    QCOMPARE(db.read("/does/not/exist"), QString(""));
+    QCOMPARE(db.read("does/not/exist"), QString(""));
 
-    db->write("/somekey", "somevalue");
-    QCOMPARE(db->read("/somekey"), QString("somevalue"));
-    QCOMPARE(db->read("somekey"), QString("somevalue"));
+    db.write("/somekey", "somevalue");
+    QCOMPARE(db.read("/somekey"), QString("somevalue"));
+    QCOMPARE(db.read("somekey"), QString("somevalue"));
 
-    db->write("somekey", "somevalue2");
-    QCOMPARE(db->read("/somekey"), QString("somevalue2"));
-    QCOMPARE(db->read("somekey"), QString("somevalue2"));
+    db.write("somekey", "somevalue2");
+    QCOMPARE(db.read("/somekey"), QString("somevalue2"));
+    QCOMPARE(db.read("somekey"), QString("somevalue2"));
 
-    db->write("/a/somekey", "somevalue");
-    QCOMPARE(db->read("/a/somekey"), QString("somevalue"));
-    QCOMPARE(db->read("a/somekey"), QString("somevalue"));
+    db.write("/a/somekey", "somevalue");
+    QCOMPARE(db.read("/a/somekey"), QString("somevalue"));
+    QCOMPARE(db.read("a/somekey"), QString("somevalue"));
 
-    db->write("/a/b/somekey", "somevalue");
-    QCOMPARE(db->read("/a/b/somekey"), QString("somevalue"));
-    QCOMPARE(db->read("a/b/somekey"), QString("somevalue"));
+    db.write("/a/b/somekey", "somevalue");
+    QCOMPARE(db.read("/a/b/somekey"), QString("somevalue"));
+    QCOMPARE(db.read("a/b/somekey"), QString("somevalue"));
 
-    db->write("/x/y/z/somekey", "somevalue");
-    QCOMPARE(db->read("/x/y/z/somekey"), QString("somevalue"));
-    QCOMPARE(db->read("x/y/z/somekey"), QString("somevalue"));
+    db.write("/x/y/z/somekey", "somevalue");
+    QCOMPARE(db.read("/x/y/z/somekey"), QString("somevalue"));
+    QCOMPARE(db.read("x/y/z/somekey"), QString("somevalue"));
 
-    db->write("/x/y/z/somekey", "somevalue2");
-    QCOMPARE(db->read("/x/y/z/somekey"), QString("somevalue2"));
-    QCOMPARE(db->read("x/y/z/somekey"), QString("somevalue2"));
+    db.write("/x/y/z/somekey", "somevalue2");
+    QCOMPARE(db.read("/x/y/z/somekey"), QString("somevalue2"));
+    QCOMPARE(db.read("x/y/z/somekey"), QString("somevalue2"));
 
-    db->write("/x/y/somekey", "somevalue");
-    QCOMPARE(db->read("/x/y/somekey"), QString("somevalue"));
-    QCOMPARE(db->read("x/y/somekey"), QString("somevalue"));
+    db.write("/x/y/somekey", "somevalue");
+    QCOMPARE(db.read("/x/y/somekey"), QString("somevalue"));
+    QCOMPARE(db.read("x/y/somekey"), QString("somevalue"));
 
-    db->write("/x/somekey", "somevalue");
-    QCOMPARE(db->read("/x/somekey"), QString("somevalue"));
-    QCOMPARE(db->read("x/somekey"), QString("somevalue"));
-    QCOMPARE(db->read("/x/y/somekey"), QString("somevalue"));
-    QCOMPARE(db->read("x/y/somekey"), QString("somevalue"));
-    QCOMPARE(db->read("/x/y/z/somekey"), QString("somevalue2"));
-    QCOMPARE(db->read("x/y/z/somekey"), QString("somevalue2"));
+    db.write("/x/somekey", "somevalue");
+    QCOMPARE(db.read("/x/somekey"), QString("somevalue"));
+    QCOMPARE(db.read("x/somekey"), QString("somevalue"));
+    QCOMPARE(db.read("/x/y/somekey"), QString("somevalue"));
+    QCOMPARE(db.read("x/y/somekey"), QString("somevalue"));
+    QCOMPARE(db.read("/x/y/z/somekey"), QString("somevalue2"));
+    QCOMPARE(db.read("x/y/z/somekey"), QString("somevalue2"));
 
-    QCOMPARE(db->read("/a/somekey"), QString("somevalue"));
-    QCOMPARE(db->read("a/somekey"), QString("somevalue"));
+    QCOMPARE(db.read("/a/somekey"), QString("somevalue"));
+    QCOMPARE(db.read("a/somekey"), QString("somevalue"));
 }
 
 void TestDBD::testDb1BasicReadWrite()
@@ -194,58 +194,57 @@ void TestDBD::testDb1BasicReadWrite()
 
     qDebug() << "testing database copied to: " << testDstDir;
 
-    DBTree *dbTree = new DBTree(testDstDir, 0);
+    DBTree dbTree(testDstDir, 0);
+    Db db(&dbTree, false);
+    new DbInterfaceAdaptor(&db);
 
-    Db *db = new Db(dbTree, false);
-    new DbInterfaceAdaptor(db);
+    QCOMPARE(db.read("/"), QString(""));
+    QCOMPARE(db.read(""), QString(""));
 
-    QCOMPARE(db->read("/"), QString(""));
-    QCOMPARE(db->read(""), QString(""));
+    QCOMPARE(db.read("/notexist"), QString(""));
+    QCOMPARE(db.read("notexist"), QString(""));
 
-    QCOMPARE(db->read("/notexist"), QString(""));
-    QCOMPARE(db->read("notexist"), QString(""));
+    QCOMPARE(db.read("/does/not/exist"), QString(""));
+    QCOMPARE(db.read("does/not/exist"), QString(""));
 
-    QCOMPARE(db->read("/does/not/exist"), QString(""));
-    QCOMPARE(db->read("does/not/exist"), QString(""));
+    db.write("/somekey", "somevalue");
+    QCOMPARE(db.read("/somekey"), QString("somevalue"));
+    QCOMPARE(db.read("somekey"), QString("somevalue"));
 
-    db->write("/somekey", "somevalue");
-    QCOMPARE(db->read("/somekey"), QString("somevalue"));
-    QCOMPARE(db->read("somekey"), QString("somevalue"));
+    db.write("somekey", "somevalue2");
+    QCOMPARE(db.read("/somekey"), QString("somevalue2"));
+    QCOMPARE(db.read("somekey"), QString("somevalue2"));
 
-    db->write("somekey", "somevalue2");
-    QCOMPARE(db->read("/somekey"), QString("somevalue2"));
-    QCOMPARE(db->read("somekey"), QString("somevalue2"));
+    db.write("/a/somekey", "somevalue");
+    QCOMPARE(db.read("/a/somekey"), QString("somevalue"));
+    QCOMPARE(db.read("a/somekey"), QString("somevalue"));
 
-    db->write("/a/somekey", "somevalue");
-    QCOMPARE(db->read("/a/somekey"), QString("somevalue"));
-    QCOMPARE(db->read("a/somekey"), QString("somevalue"));
+    db.write("/a/b/somekey", "somevalue");
+    QCOMPARE(db.read("/a/b/somekey"), QString("somevalue"));
+    QCOMPARE(db.read("a/b/somekey"), QString("somevalue"));
 
-    db->write("/a/b/somekey", "somevalue");
-    QCOMPARE(db->read("/a/b/somekey"), QString("somevalue"));
-    QCOMPARE(db->read("a/b/somekey"), QString("somevalue"));
+    db.write("/x/y/z/somekey", "somevalue");
+    QCOMPARE(db.read("/x/y/z/somekey"), QString("somevalue"));
+    QCOMPARE(db.read("x/y/z/somekey"), QString("somevalue"));
 
-    db->write("/x/y/z/somekey", "somevalue");
-    QCOMPARE(db->read("/x/y/z/somekey"), QString("somevalue"));
-    QCOMPARE(db->read("x/y/z/somekey"), QString("somevalue"));
+    db.write("/x/y/z/somekey", "somevalue2");
+    QCOMPARE(db.read("/x/y/z/somekey"), QString("somevalue2"));
+    QCOMPARE(db.read("x/y/z/somekey"), QString("somevalue2"));
 
-    db->write("/x/y/z/somekey", "somevalue2");
-    QCOMPARE(db->read("/x/y/z/somekey"), QString("somevalue2"));
-    QCOMPARE(db->read("x/y/z/somekey"), QString("somevalue2"));
+    db.write("/x/y/somekey", "somevalue");
+    QCOMPARE(db.read("/x/y/somekey"), QString("somevalue"));
+    QCOMPARE(db.read("x/y/somekey"), QString("somevalue"));
 
-    db->write("/x/y/somekey", "somevalue");
-    QCOMPARE(db->read("/x/y/somekey"), QString("somevalue"));
-    QCOMPARE(db->read("x/y/somekey"), QString("somevalue"));
+    db.write("/x/somekey", "somevalue");
+    QCOMPARE(db.read("/x/somekey"), QString("somevalue"));
+    QCOMPARE(db.read("x/somekey"), QString("somevalue"));
+    QCOMPARE(db.read("/x/y/somekey"), QString("somevalue"));
+    QCOMPARE(db.read("x/y/somekey"), QString("somevalue"));
+    QCOMPARE(db.read("/x/y/z/somekey"), QString("somevalue2"));
+    QCOMPARE(db.read("x/y/z/somekey"), QString("somevalue2"));
 
-    db->write("/x/somekey", "somevalue");
-    QCOMPARE(db->read("/x/somekey"), QString("somevalue"));
-    QCOMPARE(db->read("x/somekey"), QString("somevalue"));
-    QCOMPARE(db->read("/x/y/somekey"), QString("somevalue"));
-    QCOMPARE(db->read("x/y/somekey"), QString("somevalue"));
-    QCOMPARE(db->read("/x/y/z/somekey"), QString("somevalue2"));
-    QCOMPARE(db->read("x/y/z/somekey"), QString("somevalue2"));
-
-    QCOMPARE(db->read("/a/somekey"), QString("somevalue"));
-    QCOMPARE(db->read("a/somekey"), QString("somevalue"));
+    QCOMPARE(db.read("/a/somekey"), QString("somevalue"));
+    QCOMPARE(db.read("a/somekey"), QString("somevalue"));
 }
 
 void TestDBD::testDb1VariousTypesRead()
@@ -256,92 +255,91 @@ void TestDBD::testDb1VariousTypesRead()
 
     qDebug() << "testing database copied to: " << testDstDir;
 
-    DBTree *dbTree = new DBTree(testDstDir, 0);
+    DBTree dbTree(testDstDir, 0);
+    Db db(&dbTree, false);
+    new DbInterfaceAdaptor(&db);
 
-    Db *db = new Db(dbTree, false);
-    new DbInterfaceAdaptor(db);
-
-    QCOMPARE(db->read("/"), QString(""));
+    QCOMPARE(db.read("/"), QString(""));
 
     // pull various types data of of the db
-    QCOMPARE(db->read("booltrue"), QString("true"));
-    QCOMPARE(db->read("boolfalse"), QString("false"));
-    QCOMPARE(db->read("string"), QString("blue"));
-    QCOMPARE(db->read("number"), QString("56"));
-    QCOMPARE(db->read("null"), QString("null"));
-    QCOMPARE(db->read("array"), QString(""));
-    QCOMPARE(db->read("object"), QString(""));
-    QCOMPARE(db->read("object/booltrue"), QString("true"));
-    QCOMPARE(db->read("object/boolfalse"), QString("false"));
-    QCOMPARE(db->read("object/string"), QString("blue"));
-    QCOMPARE(db->read("object/number"), QString("56"));
-    QCOMPARE(db->read("object/null"), QString("null"));
-    QCOMPARE(db->read("object/array"), QString(""));
-    QCOMPARE(db->read("object/object"), QString(""));
-    QCOMPARE(db->read("object/object/booltrue"), QString("true"));
-    QCOMPARE(db->read("object/object/boolfalse"), QString("false"));
-    QCOMPARE(db->read("object/object/string"), QString("blue"));
-    QCOMPARE(db->read("object/object/number"), QString("56"));
-    QCOMPARE(db->read("object/object/null"), QString("null"));
-    QCOMPARE(db->read("object/object/array"), QString(""));
+    QCOMPARE(db.read("booltrue"), QString("true"));
+    QCOMPARE(db.read("boolfalse"), QString("false"));
+    QCOMPARE(db.read("string"), QString("blue"));
+    QCOMPARE(db.read("number"), QString("56"));
+    QCOMPARE(db.read("null"), QString("null"));
+    QCOMPARE(db.read("array"), QString(""));
+    QCOMPARE(db.read("object"), QString(""));
+    QCOMPARE(db.read("object/booltrue"), QString("true"));
+    QCOMPARE(db.read("object/boolfalse"), QString("false"));
+    QCOMPARE(db.read("object/string"), QString("blue"));
+    QCOMPARE(db.read("object/number"), QString("56"));
+    QCOMPARE(db.read("object/null"), QString("null"));
+    QCOMPARE(db.read("object/array"), QString(""));
+    QCOMPARE(db.read("object/object"), QString(""));
+    QCOMPARE(db.read("object/object/booltrue"), QString("true"));
+    QCOMPARE(db.read("object/object/boolfalse"), QString("false"));
+    QCOMPARE(db.read("object/object/string"), QString("blue"));
+    QCOMPARE(db.read("object/object/number"), QString("56"));
+    QCOMPARE(db.read("object/object/null"), QString("null"));
+    QCOMPARE(db.read("object/object/array"), QString(""));
 }
 
 
 void TestDBD::testDbBasicDump()
 {
-    DBTree *dbTree = new DBTree(":memory:", 0);
-    Db *db = new Db(dbTree, false);
-    new DbInterfaceAdaptor(db);
+    DBTree dbTree(":memory:", 0);
+    Db db(&dbTree, false);
+    new DbInterfaceAdaptor(&db);
 
-    QCOMPARE(db->read("/"), QString(""));
-    QCOMPARE(db->read(""), QString(""));
-    QCOMPARE(db->dump(""), QString("{}"));
+    QCOMPARE(db.read("/"), QString(""));
+    QCOMPARE(db.read(""), QString(""));
+    QCOMPARE(db.dump(""), QString("{}"));
 
-    db->write("/somekey", "somevalue");
-    QCOMPARE(db->read("/somekey"), QString("somevalue"));
-    QCOMPARE(db->dump("/somekey"), QString("\"somevalue\""));
-    QCOMPARE(db->dump("somekey"), QString("\"somevalue\""));
-    QCOMPARE(db->dump("/"), QString("{\"somekey\":\"somevalue\"}"));
-    QCOMPARE(db->dump(""), QString("{\"somekey\":\"somevalue\"}"));
+    db.write("/somekey", "somevalue");
+    QCOMPARE(db.read("/somekey"), QString("somevalue"));
+    QCOMPARE(db.dump("/somekey"), QString("\"somevalue\""));
+    QCOMPARE(db.dump("somekey"), QString("\"somevalue\""));
+    QCOMPARE(db.dump("/"), QString("{\"somekey\":\"somevalue\"}"));
+    QCOMPARE(db.dump(""), QString("{\"somekey\":\"somevalue\"}"));
 }
 
 void TestDBD::testDbBasicExists()
 {
-    DBTree *dbTree = new DBTree(":memory:", 0);
-    Db *db = new Db(dbTree, false);
-    new DbInterfaceAdaptor(db);
+    DBTree dbTree(":memory:", 0);
+    Db db(&dbTree, false);
+    new DbInterfaceAdaptor(&db);
 
-    QCOMPARE(db->exists("/"), true);
-    QCOMPARE(db->exists(""), true);
+    QCOMPARE(db.exists("/"), true);
+    QCOMPARE(db.exists(""), true);
 
-    QCOMPARE(db->exists("/notexists"), false);
-    QCOMPARE(db->exists("notexists"), false);
+    QCOMPARE(db.exists("/notexists"), false);
+    QCOMPARE(db.exists("notexists"), false);
 
-    QCOMPARE(db->exists("/not/exists"), false);
-    QCOMPARE(db->exists("not/exists"), false);
+    QCOMPARE(db.exists("/not/exists"), false);
+    QCOMPARE(db.exists("not/exists"), false);
 
-    db->write("/somekey", "somevalue");
-    QCOMPARE(db->exists("/somekey"), true);
-    QCOMPARE(db->exists("somekey"), true);
+    db.write("/somekey", "somevalue");
+    QCOMPARE(db.exists("/somekey"), true);
+    QCOMPARE(db.exists("somekey"), true);
 }
 
 void TestDBD::testDbBasicList()
 {
-    DBTree *dbTree = new DBTree(":memory:", 0);
-    Db *db = new Db(dbTree, false);
-    new DbInterfaceAdaptor(db);
+    DBTree dbTree(":memory:", 0);
+    Db db(&dbTree, false);
+    new DbInterfaceAdaptor(&db);
 
-    QCOMPARE(db->list("/"), QStringList());
-    QCOMPARE(db->list(""), QStringList());
+    QCOMPARE(db.list("/"), QStringList());
+    QCOMPARE(db.list(""), QStringList());
 
-    db->write("/somekey", "somevalue");
-    QCOMPARE(db->list("/somekey"), QStringList());
+    db.write("/somekey", "somevalue");
+    QCOMPARE(db.list("/somekey"), QStringList());
 
-    db->write("/x/a", "somevalue");
-    db->write("/x/b", "somevalue");
-    db->write("/x/c", "somevalue");
+    db.write("/x/a", "somevalue");
+    db.write("/x/b", "somevalue");
+    db.write("/x/c", "somevalue");
 
-    QStringList results = db->list("/x");
+    QStringList results = db.list("/x");
     results.sort();
 
     QStringList expected;
@@ -349,55 +347,55 @@ void TestDBD::testDbBasicList()
     expected.sort();
     QCOMPARE(results, expected);
 
-    db->write("/x/d", "somevalue");
+    db.write("/x/d", "somevalue");
 
-    results = db->list("/x");
+    results = db.list("/x");
     results.sort();
 
     expected << "d";
     expected.sort();
     QCOMPARE(results, expected);
 
-    QCOMPARE(db->list("/x/d"), QStringList());
+    QCOMPARE(db.list("/x/d"), QStringList());
 }
 
 void TestDBD::testDbBasicRm()
 {
-    DBTree *dbTree = new DBTree(":memory:", 0);
-    Db *db = new Db(dbTree, false);
-    new DbInterfaceAdaptor(db);
+    DBTree dbTree(":memory:", 0);
+    Db db(&dbTree, false);
+    new DbInterfaceAdaptor(&db);
 
-    QCOMPARE(db->exists(""), true);
-    db->rm("/");
-    QCOMPARE(db->exists(""), true);
+    QCOMPARE(db.exists(""), true);
+    db.rm("/");
+    QCOMPARE(db.exists(""), true);
 
-    db->write("/somekey", "somevalue");
-    QCOMPARE(db->exists("/somekey"), true);
+    db.write("/somekey", "somevalue");
+    QCOMPARE(db.exists("/somekey"), true);
 
-    db->rm("/somekey");
-    QCOMPARE(db->exists("/somekey"), false);
+    db.rm("/somekey");
+    QCOMPARE(db.exists("/somekey"), false);
 
-    db->write("/x/a", "somevalue");
-    QCOMPARE(db->exists("/x/a"), true);
-    db->rm("/x/a");
-    QCOMPARE(db->exists("/x/a"), false);
-    QCOMPARE(db->exists("/x"), true);
+    db.write("/x/a", "somevalue");
+    QCOMPARE(db.exists("/x/a"), true);
+    db.rm("/x/a");
+    QCOMPARE(db.exists("/x/a"), false);
+    QCOMPARE(db.exists("/x"), true);
 
-    db->write("/x/a/b", "somevalue");
-    QCOMPARE(db->exists("/x/a/b"), true);
-    db->rm("/x/a");
-    QCOMPARE(db->exists("/x/a/b"), false);
-    QCOMPARE(db->exists("/x/a"), false);
-    QCOMPARE(db->exists("/x"), true);
+    db.write("/x/a/b", "somevalue");
+    QCOMPARE(db.exists("/x/a/b"), true);
+    db.rm("/x/a");
+    QCOMPARE(db.exists("/x/a/b"), false);
+    QCOMPARE(db.exists("/x/a"), false);
+    QCOMPARE(db.exists("/x"), true);
 }
 
 void TestDBD::testDbBasicInject()
 {
-    DBTree *dbTree = new DBTree(":memory:", 0);
-    Db *db = new Db(dbTree, false);
-    new DbInterfaceAdaptor(db);
+    DBTree dbTree(":memory:", 0);
+    Db db(&dbTree, false);
+    new DbInterfaceAdaptor(&db);
 
-    QCOMPARE(db->exists(""), true);
+    QCOMPARE(db.exists(""), true);
 
     QString serviceNdvm = QString("{ \
         \"uuid\": \"00000000-0000-0000-0000-000000000002\", \
@@ -485,9 +483,9 @@ void TestDBD::testDbBasicInject()
 
     auto val = QMJsonValue::fromJson(serviceNdvm);
     auto str = val->toJson(QMJsonFormat_Optimized, QMJsonSort_CaseSensitive);
-    db->inject("/vm/somendvm", serviceNdvm);
+    db.inject("/vm/somendvm", serviceNdvm);
 
-    auto dumpval = QMJsonValue::fromJson(db->dump("/vm/somendvm"));
+    auto dumpval = QMJsonValue::fromJson(db.dump("/vm/somendvm"));
     auto dumpstr = dumpval->toJson(QMJsonFormat_Optimized, QMJsonSort_CaseSensitive);
 
     QCOMPARE(str, dumpstr);
@@ -500,9 +498,9 @@ void TestDBD::testDbBasicInject()
 
     str = val->toJson(QMJsonFormat_Optimized, QMJsonSort_CaseSensitive);
 
-    db->inject("/vm/somendvm", str);
+    db.inject("/vm/somendvm", str);
 
-    dumpval = QMJsonValue::fromJson(db->dump("/vm/somendvm"));
+    dumpval = QMJsonValue::fromJson(db.dump("/vm/somendvm"));
     dumpstr = dumpval->toJson(QMJsonFormat_Optimized, QMJsonSort_CaseSensitive);
 
     QCOMPARE(str, dumpstr);
@@ -517,11 +515,11 @@ void TestDBD::testDb2Inject()
 
     qDebug() << "testing database copied to: " << testDstDir;
 
-    DBTree *dbTree = new DBTree(testDstDir, 0);
-    Db *db = new Db(dbTree, false);
-    new DbInterfaceAdaptor(db);
+    DBTree dbTree(testDstDir, 0);
+    Db db(&dbTree, false);
+    new DbInterfaceAdaptor(&db);
 
-    QCOMPARE(db->exists(""), true);
+    QCOMPARE(db.exists(""), true);
 
     QString serviceNdvm = QString("{ \
         \"uuid\": \"00000000-0000-0000-0000-000000000002\", \
@@ -609,9 +607,9 @@ void TestDBD::testDb2Inject()
 
     auto val = QMJsonValue::fromJson(serviceNdvm);
     auto str = val->toJson(QMJsonFormat_Optimized, QMJsonSort_CaseSensitive);
-    db->inject("/vm/00000000-0000-0000-0000-000000000002", serviceNdvm);
+    db.inject("/vm/00000000-0000-0000-0000-000000000002", serviceNdvm);
 
-    auto dumpval = QMJsonValue::fromJson(db->dump("/vm/00000000-0000-0000-0000-000000000002"));
+    auto dumpval = QMJsonValue::fromJson(db.dump("/vm/00000000-0000-0000-0000-000000000002"));
     auto dumpstr = dumpval->toJson(QMJsonFormat_Optimized, QMJsonSort_CaseSensitive);
 
     QCOMPARE(str, dumpstr);
@@ -619,6 +617,7 @@ void TestDBD::testDb2Inject()
     QCOMPARE(dumpval->toObject()->value("config")->toObject()->value("pae")->toString(), QString("true"));
 
     auto fileval = QMJsonValue::fromJsonFile(testDstDir + QDir::separator() + "vms" + QDir::separator() + "00000000-0000-0000-0000-000000000002.db");
+    QCOMPARE(fileval.isNull(), false);
 
     qDebug() << "fileval: " << fileval;
 
@@ -631,9 +630,9 @@ void TestDBD::testDb2Inject()
 
     str = val->toJson(QMJsonFormat_Optimized, QMJsonSort_CaseSensitive);
 
-    db->inject("/vm/00000000-0000-0000-0000-000000000002", str);
+    db.inject("/vm/00000000-0000-0000-0000-000000000002", str);
 
-    dumpval = QMJsonValue::fromJson(db->dump("/vm/00000000-0000-0000-0000-000000000002"));
+    dumpval = QMJsonValue::fromJson(db.dump("/vm/00000000-0000-0000-0000-000000000002"));
     dumpstr = dumpval->toJson(QMJsonFormat_Optimized, QMJsonSort_CaseSensitive);
 
     QCOMPARE(str, dumpstr);
@@ -641,6 +640,7 @@ void TestDBD::testDb2Inject()
     QCOMPARE(dumpval->toObject()->value("config")->toObject()->value("pae")->toString(), QString("false"));
 
     fileval = QMJsonValue::fromJsonFile(testDstDir + QDir::separator() + "vms" + QDir::separator() + "00000000-0000-0000-0000-000000000002.db");
+    QCOMPARE(fileval.isNull(), false);
     filestr = fileval->toJson(QMJsonFormat_Optimized, QMJsonSort_CaseSensitive);
 
     qDebug() << "fileval: " << fileval;
@@ -655,36 +655,38 @@ void TestDBD::testDb2WriteVm()
 
     qDebug() << "testing database copied to: " << testDstDir;
 
-    DBTree *dbTree = new DBTree(testDstDir, 0);
-    Db *db = new Db(dbTree, false);
-    new DbInterfaceAdaptor(db);
+    DBTree dbTree(testDstDir, 0);
+    Db db(&dbTree, false);
+    new DbInterfaceAdaptor(&db);
 
-    QCOMPARE(db->exists(""), true);
+    QCOMPARE(db.exists(""), true);
 
-    db->write("/vm/00000000-0000-0000-0000-000000000002/somekey", "somevalue");
-    QCOMPARE(db->exists("/vm/00000000-0000-0000-0000-000000000002/somekey"), true);
-    QCOMPARE(db->exists("vm/00000000-0000-0000-0000-000000000002/somekey"), true);
+    db.write("/vm/00000000-0000-0000-0000-000000000002/somekey", "somevalue");
+    QCOMPARE(db.exists("/vm/00000000-0000-0000-0000-000000000002/somekey"), true);
+    QCOMPARE(db.exists("vm/00000000-0000-0000-0000-000000000002/somekey"), true);
 
-    auto dumpval = QMJsonValue::fromJson(db->dump("/vm/00000000-0000-0000-0000-000000000002"));
+    auto dumpval = QMJsonValue::fromJson(db.dump("/vm/00000000-0000-0000-0000-000000000002"));
     auto dumpstr = dumpval->toJson(QMJsonFormat_Optimized, QMJsonSort_CaseSensitive);
 
     QCOMPARE(QString("{\"somekey\":\"somevalue\"}"), dumpstr);
     QCOMPARE(dumpval->toObject()->value("somekey")->toString(), QString("somevalue"));
 
     auto fileval = QMJsonValue::fromJsonFile(testDstDir + QDir::separator() + "vms" + QDir::separator() + "00000000-0000-0000-0000-000000000002.db");
+    QCOMPARE(fileval.isNull(), false);
     auto filestr = fileval->toJson(QMJsonFormat_Optimized, QMJsonSort_CaseSensitive);
     QCOMPARE(filestr, dumpstr);
 
     // twiddle some bits
-    db->write("/vm/00000000-0000-0000-0000-000000000002/somekey", "12345");
+    db.write("/vm/00000000-0000-0000-0000-000000000002/somekey", "12345");
 
-    dumpval = QMJsonValue::fromJson(db->dump("/vm/00000000-0000-0000-0000-000000000002"));
+    dumpval = QMJsonValue::fromJson(db.dump("/vm/00000000-0000-0000-0000-000000000002"));
     dumpstr = dumpval->toJson(QMJsonFormat_Optimized, QMJsonSort_CaseSensitive);
 
     QCOMPARE(QString("{\"somekey\":\"12345\"}"), dumpstr);
     QCOMPARE(dumpval->toObject()->value("somekey")->toString(), QString("12345"));
 
     fileval = QMJsonValue::fromJsonFile(testDstDir + QDir::separator() + "vms" + QDir::separator() + "00000000-0000-0000-0000-000000000002.db");
+    QCOMPARE(fileval.isNull(), false);
     filestr = fileval->toJson(QMJsonFormat_Optimized, QMJsonSort_CaseSensitive);
     QCOMPARE(filestr, dumpstr);
 }
@@ -696,36 +698,38 @@ void TestDBD::testDb2WriteDomstore()
 
     qDebug() << "testing database copied to: " << testDstDir;
 
-    DBTree *dbTree = new DBTree(testDstDir, 0);
-    Db *db = new Db(dbTree, false);
-    new DbInterfaceAdaptor(db);
+    DBTree dbTree(testDstDir, 0);
+    Db db(&dbTree, false);
+    new DbInterfaceAdaptor(&db);
 
-    QCOMPARE(db->exists(""), true);
+    QCOMPARE(db.exists(""), true);
 
-    db->write("/dom-store/00000000-0000-0000-0000-000000000002/somekey", "somevalue");
-    QCOMPARE(db->exists("/dom-store/00000000-0000-0000-0000-000000000002/somekey"), true);
-    QCOMPARE(db->exists("dom-store/00000000-0000-0000-0000-000000000002/somekey"), true);
+    db.write("/dom-store/00000000-0000-0000-0000-000000000002/somekey", "somevalue");
+    QCOMPARE(db.exists("/dom-store/00000000-0000-0000-0000-000000000002/somekey"), true);
+    QCOMPARE(db.exists("dom-store/00000000-0000-0000-0000-000000000002/somekey"), true);
 
-    auto dumpval = QMJsonValue::fromJson(db->dump("/dom-store/00000000-0000-0000-0000-000000000002"));
+    auto dumpval = QMJsonValue::fromJson(db.dump("/dom-store/00000000-0000-0000-0000-000000000002"));
     auto dumpstr = dumpval->toJson(QMJsonFormat_Optimized, QMJsonSort_CaseSensitive);
 
     QCOMPARE(QString("{\"somekey\":\"somevalue\"}"), dumpstr);
     QCOMPARE(dumpval->toObject()->value("somekey")->toString(), QString("somevalue"));
 
     auto fileval = QMJsonValue::fromJsonFile(testDstDir + QDir::separator() + "dom-store" + QDir::separator() + "00000000-0000-0000-0000-000000000002.db");
+    QCOMPARE(fileval.isNull(), false);
     auto filestr = fileval->toJson(QMJsonFormat_Optimized, QMJsonSort_CaseSensitive);
     QCOMPARE(filestr, dumpstr);
 
     // twiddle some bits
-    db->write("/dom-store/00000000-0000-0000-0000-000000000002/somekey", "12345");
+    db.write("/dom-store/00000000-0000-0000-0000-000000000002/somekey", "12345");
 
-    dumpval = QMJsonValue::fromJson(db->dump("/dom-store/00000000-0000-0000-0000-000000000002"));
+    dumpval = QMJsonValue::fromJson(db.dump("/dom-store/00000000-0000-0000-0000-000000000002"));
     dumpstr = dumpval->toJson(QMJsonFormat_Optimized, QMJsonSort_CaseSensitive);
 
     QCOMPARE(QString("{\"somekey\":\"12345\"}"), dumpstr);
     QCOMPARE(dumpval->toObject()->value("somekey")->toString(), QString("12345"));
 
     fileval = QMJsonValue::fromJsonFile(testDstDir + QDir::separator() + "dom-store" + QDir::separator() + "00000000-0000-0000-0000-000000000002.db");
+    QCOMPARE(fileval.isNull(), false);
     filestr = fileval->toJson(QMJsonFormat_Optimized, QMJsonSort_CaseSensitive);
     QCOMPARE(filestr, dumpstr);
 }
@@ -737,17 +741,17 @@ void TestDBD::testDb2WriteDomstoreQueuedFlush()
 
     qDebug() << "testing database copied to: " << testDstDir;
 
-    DBTree *dbTree = new DBTree(testDstDir, 1);
-    Db *db = new Db(dbTree, false);
-    new DbInterfaceAdaptor(db);
+    DBTree dbTree(testDstDir, 1);
+    Db db(&dbTree, false);
+    new DbInterfaceAdaptor(&db);
 
-    QCOMPARE(db->exists(""), true);
+    QCOMPARE(db.exists(""), true);
 
-    db->write("/dom-store/00000000-0000-0000-0000-000000000002/somekey", "somevalue");
-    QCOMPARE(db->exists("/dom-store/00000000-0000-0000-0000-000000000002/somekey"), true);
-    QCOMPARE(db->exists("dom-store/00000000-0000-0000-0000-000000000002/somekey"), true);
+    db.write("/dom-store/00000000-0000-0000-0000-000000000002/somekey", "somevalue");
+    QCOMPARE(db.exists("/dom-store/00000000-0000-0000-0000-000000000002/somekey"), true);
+    QCOMPARE(db.exists("dom-store/00000000-0000-0000-0000-000000000002/somekey"), true);
 
-    auto dumpval = QMJsonValue::fromJson(db->dump("/dom-store/00000000-0000-0000-0000-000000000002"));
+    auto dumpval = QMJsonValue::fromJson(db.dump("/dom-store/00000000-0000-0000-0000-000000000002"));
     auto dumpstr = dumpval->toJson(QMJsonFormat_Optimized, QMJsonSort_CaseSensitive);
 
     QCOMPARE(QString("{\"somekey\":\"somevalue\"}"), dumpstr);
@@ -755,20 +759,22 @@ void TestDBD::testDb2WriteDomstoreQueuedFlush()
 
     QTest::qWait(500);
     auto fileval = QMJsonValue::fromJsonFile(testDstDir + QDir::separator() + "dom-store" + QDir::separator() + "00000000-0000-0000-0000-000000000002.db");
+    QCOMPARE(fileval.isNull(), false);
     auto filestr = fileval->toJson(QMJsonFormat_Optimized, QMJsonSort_CaseSensitive);
     QCOMPARE(filestr, dumpstr);
 
     // twiddle some bits
-    db->write("/dom-store/00000000-0000-0000-0000-000000000002/somekey", "12345");
+    db.write("/dom-store/00000000-0000-0000-0000-000000000002/somekey", "12345");
 
     QTest::qWait(500);
-    dumpval = QMJsonValue::fromJson(db->dump("/dom-store/00000000-0000-0000-0000-000000000002"));
+    dumpval = QMJsonValue::fromJson(db.dump("/dom-store/00000000-0000-0000-0000-000000000002"));
     dumpstr = dumpval->toJson(QMJsonFormat_Optimized, QMJsonSort_CaseSensitive);
 
     QCOMPARE(QString("{\"somekey\":\"12345\"}"), dumpstr);
     QCOMPARE(dumpval->toObject()->value("somekey")->toString(), QString("12345"));
 
     fileval = QMJsonValue::fromJsonFile(testDstDir + QDir::separator() + "dom-store" + QDir::separator() + "00000000-0000-0000-0000-000000000002.db");
+    QCOMPARE(fileval.isNull(), false);
     filestr = fileval->toJson(QMJsonFormat_Optimized, QMJsonSort_CaseSensitive);
     QCOMPARE(filestr, dumpstr);
 }
@@ -780,17 +786,17 @@ void TestDBD::testDb2WriteRmDomstore()
 
     qDebug() << "testing database copied to: " << testDstDir;
 
-    DBTree *dbTree = new DBTree(testDstDir, 1);
-    Db *db = new Db(dbTree, false);
-    new DbInterfaceAdaptor(db);
+    DBTree dbTree(testDstDir, 1);
+    Db db(&dbTree, false);
+    new DbInterfaceAdaptor(&db);
 
-    QCOMPARE(db->exists(""), true);
+    QCOMPARE(db.exists(""), true);
 
-    db->write("/dom-store/00000000-0000-0000-0000-000000000002/somekey", "somevalue");
-    QCOMPARE(db->exists("/dom-store/00000000-0000-0000-0000-000000000002/somekey"), true);
-    QCOMPARE(db->exists("dom-store/00000000-0000-0000-0000-000000000002/somekey"), true);
+    db.write("/dom-store/00000000-0000-0000-0000-000000000002/somekey", "somevalue");
+    QCOMPARE(db.exists("/dom-store/00000000-0000-0000-0000-000000000002/somekey"), true);
+    QCOMPARE(db.exists("dom-store/00000000-0000-0000-0000-000000000002/somekey"), true);
 
-    auto dumpval = QMJsonValue::fromJson(db->dump("/dom-store/00000000-0000-0000-0000-000000000002"));
+    auto dumpval = QMJsonValue::fromJson(db.dump("/dom-store/00000000-0000-0000-0000-000000000002"));
     auto dumpstr = dumpval->toJson(QMJsonFormat_Optimized, QMJsonSort_CaseSensitive);
 
     QCOMPARE(QString("{\"somekey\":\"somevalue\"}"), dumpstr);
@@ -800,17 +806,18 @@ void TestDBD::testDb2WriteRmDomstore()
     QString dbFilePath(testDstDir + QDir::separator() + "dom-store" + QDir::separator() + "00000000-0000-0000-0000-000000000002.db");
 
     auto fileval = QMJsonValue::fromJsonFile(dbFilePath);
+    QCOMPARE(fileval.isNull(), false);
     auto filestr = fileval->toJson(QMJsonFormat_Optimized, QMJsonSort_CaseSensitive);
     QCOMPARE(filestr, dumpstr);
 
-    QCOMPARE(db->exists("dom-store/00000000-0000-0000-0000-000000000002/somekey"), true);
-    QCOMPARE(db->exists("dom-store/00000000-0000-0000-0000-000000000002"), true);
+    QCOMPARE(db.exists("dom-store/00000000-0000-0000-0000-000000000002/somekey"), true);
+    QCOMPARE(db.exists("dom-store/00000000-0000-0000-0000-000000000002"), true);
 
     // remove domstore
-    db->rm("/dom-store/00000000-0000-0000-0000-000000000002");
+    db.rm("/dom-store/00000000-0000-0000-0000-000000000002");
 
-    QCOMPARE(db->exists("dom-store/00000000-0000-0000-0000-000000000002/somekey"), false);
-    QCOMPARE(db->exists("dom-store/00000000-0000-0000-0000-000000000002"), false);
+    QCOMPARE(db.exists("dom-store/00000000-0000-0000-0000-000000000002/somekey"), false);
+    QCOMPARE(db.exists("dom-store/00000000-0000-0000-0000-000000000002"), false);
 
     QTest::qWait(500);
 
@@ -819,5 +826,92 @@ void TestDBD::testDb2WriteRmDomstore()
     QCOMPARE(QFile::exists(dbFilePath), false);
 }
 
+
+void TestDBD::testDb3WriteBaseDb()
+{
+    QString testSrcDir = QString("tests") + QDir::separator() + QString("db-3");
+    QString testDstDir = prepTestDB(testSrcDir);
+
+    qDebug() << "testing database copied to: " << testDstDir;
+
+    DBTree dbTree(testDstDir, 0);
+    Db db(&dbTree, false);
+    DbInterfaceAdaptor dia(&db);
+
+    QCOMPARE(db.exists(""), true);
+
+    db.write("somekey", "somevalue");
+    QCOMPARE(db.exists("somekey"), true);
+    QCOMPARE(db.exists("/somekey"), true);
+
+    auto dumpval = QMJsonValue::fromJson(db.dump("/"));
+    auto dumpstr = dumpval->toJson(QMJsonFormat_Optimized, QMJsonSort_CaseSensitive);
+
+    QCOMPARE(QString("{\"somekey\":\"somevalue\"}"), dumpstr);
+    QCOMPARE(dumpval->toObject()->value("somekey")->toString(), QString("somevalue"));
+
+    auto fileval = QMJsonValue::fromJsonFile(testDstDir + QDir::separator() + "db");
+    QCOMPARE(fileval.isNull(), false);
+    auto filestr = fileval->toJson(QMJsonFormat_Optimized, QMJsonSort_CaseSensitive);
+    QCOMPARE(filestr, dumpstr);
+
+    // twiddle some bits
+    db.write("/somekey", "12345");
+
+    dumpval = QMJsonValue::fromJson(db.dump("/"));
+    dumpstr = dumpval->toJson(QMJsonFormat_Optimized, QMJsonSort_CaseSensitive);
+
+    QCOMPARE(QString("{\"somekey\":\"12345\"}"), dumpstr);
+    QCOMPARE(dumpval->toObject()->value("somekey")->toString(), QString("12345"));
+
+    fileval = QMJsonValue::fromJsonFile(testDstDir + QDir::separator() + "db");
+    filestr = fileval->toJson(QMJsonFormat_Optimized, QMJsonSort_CaseSensitive);
+    QCOMPARE(filestr, dumpstr);
+}
+
+
+void TestDBD::testDb3WriteDbQueuedFlush()
+{
+    QString testSrcDir = QString("tests") + QDir::separator() + QString("db-3");
+    QString testDstDir = prepTestDB(testSrcDir);
+
+    qDebug() << "testing database copied to: " << testDstDir;
+
+    DBTree dbTree(testDstDir, 1);
+    Db db(&dbTree, false);
+    DbInterfaceAdaptor dia(&db);
+
+    QCOMPARE(db.exists(""), true);
+
+    db.write("/somekey", "somevalue");
+    QCOMPARE(db.exists("/somekey"), true);
+
+    auto dumpval = QMJsonValue::fromJson(db.dump("/"));
+    auto dumpstr = dumpval->toJson(QMJsonFormat_Optimized, QMJsonSort_CaseSensitive);
+
+    QCOMPARE(QString("{\"somekey\":\"somevalue\"}"), dumpstr);
+    QCOMPARE(dumpval->toObject()->value("somekey")->toString(), QString("somevalue"));
+
+    QTest::qWait(500);
+    auto fileval = QMJsonValue::fromJsonFile(testDstDir + QDir::separator() + "db");
+    QCOMPARE(fileval.isNull(), false);
+    auto filestr = fileval->toJson(QMJsonFormat_Optimized, QMJsonSort_CaseSensitive);
+    QCOMPARE(filestr, dumpstr);
+
+    // twiddle some bits
+    db.write("/somekey", "12345");
+
+    dumpval = QMJsonValue::fromJson(db.dump("/"));
+    dumpstr = dumpval->toJson(QMJsonFormat_Optimized, QMJsonSort_CaseSensitive);
+
+    QCOMPARE(QString("{\"somekey\":\"12345\"}"), dumpstr);
+    QCOMPARE(dumpval->toObject()->value("somekey")->toString(), QString("12345"));
+
+    QTest::qWait(500);
+    fileval = QMJsonValue::fromJsonFile(testDstDir + QDir::separator() + "db");
+    QCOMPARE(fileval.isNull(), false);
+    filestr = fileval->toJson(QMJsonFormat_Optimized, QMJsonSort_CaseSensitive);
+    QCOMPARE(filestr, dumpstr);
+}
 
 QTEST_MAIN(TestDBD)
