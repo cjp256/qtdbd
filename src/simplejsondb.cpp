@@ -36,7 +36,7 @@ SimpleJsonDB::SimpleJsonDB(const QString vpath, const QString path, int maxFlush
     }
 
     // inter-thread signal so main thread can trigger the timer start
-    if (!QObject::connect(this, &SimpleJsonDB::signalFlushTimer, this, &SimpleJsonDB::startFlushTimer))
+    if (!QObject::connect(this, &SimpleJsonDB::signalFlushTimer, this, &SimpleJsonDB::startFlushTimer, Qt::BlockingQueuedConnection))
     {
         qFatal("failed to connect signalFlushTimer() to startFlushTimer()");
     }
