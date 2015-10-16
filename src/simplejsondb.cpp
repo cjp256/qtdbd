@@ -27,7 +27,6 @@
 SimpleJsonDB::SimpleJsonDB(const QString vpath, const QString path, int maxFlushDelayMillis) : db(), vpath(vpath), path(path), writeLock(), flushTimer(this), maxFlushDelay(maxFlushDelayMillis), skipDisk(false), filterVmAndDomstoreKeys(false)
 {
     flushTimer.setSingleShot(true);
-    flushTimer.setInterval(maxFlushDelay);
 
     // connect timer up to flush function
     if (!QObject::connect(&flushTimer, &QTimer::timeout, this, &SimpleJsonDB::flush))
@@ -105,7 +104,6 @@ void SimpleJsonDB::setFilterVmAndDomstoreKeys(bool filter)
 void SimpleJsonDB::setMaxFlushDelay(int maxFlushDelayMillis)
 {
     maxFlushDelay = maxFlushDelayMillis;
-    flushTimer.setInterval(maxFlushDelay);
 }
 
 QMPointer<QMJsonValue> SimpleJsonDB::getValue()
@@ -206,6 +204,15 @@ void SimpleJsonDB::queueFlush()
     if (maxFlushDelay > 0 && !flushTimer.isActive())
     {
         qDebug() << "queue flush for db:" << path << "millis:" << maxFlushDelay;
+
+        if (this->thread()->isFinished()) {
+            qFatal("flush thread is finished??");
+        }
+
+        if (!this->thread()->isRunning()) {
+            qFatal("flush thread is not running??");
+        }
+
         emit signalFlushTimer();
     }
 }
