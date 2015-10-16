@@ -30,11 +30,17 @@ SimpleJsonDB::SimpleJsonDB(const QString vpath, const QString path, int maxFlush
     flushTimer.setInterval(maxFlushDelay);
 
     // connect timer up to flush function
-    QObject::connect(&flushTimer, &QTimer::timeout, this, &SimpleJsonDB::flush);
+    if (!QObject::connect(&flushTimer, &QTimer::timeout, this, &SimpleJsonDB::flush))
+    {
+        qFatal("failed to connect timeout() to flush()");
+    }
 
     // connect our startFlushTimer signal to start the timer (so main thread can emit this signal)
     // must use SIGNAL() SLOT() style because start() is overloaded
-    QObject::connect(this, SIGNAL(startFlushTimer()), &flushTimer, SLOT(start()));
+    if (!QObject::connect(this, SIGNAL(startFlushTimer()), &flushTimer, SLOT(start())))
+    {
+        qFatal("failed to startFlushTimer() to start()");
+    }
 
     // read in db from disk
     readFromDisk();
