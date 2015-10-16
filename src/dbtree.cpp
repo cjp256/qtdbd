@@ -29,14 +29,21 @@ DBTree::DBTree(QString dbPath, int maxFlushDelayMillis) : dbRoot(), dbPath(dbPat
 {
     qDebug() << "DBTree init(" << dbPath << "," << maxFlushDelay << ")";
     flushThread = new QThread();
+
+    qDebug() << "main db tree thread:" << QThread::currentThread();
+    qDebug() << "created flush thread:" << flushThread;
+
     flushThread->start();
     loadTree();
 }
 
 DBTree::~DBTree()
 {
+    qDebug() << "dbtree destructing...";
     flushThread->quit();
+    qDebug() << "dbtree waiting for flush thread...";
     flushThread->wait();
+    qDebug() << "will delete flush thread later...";
     flushThread->deleteLater();
 }
 

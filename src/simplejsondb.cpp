@@ -52,7 +52,7 @@ SimpleJsonDB::~SimpleJsonDB()
 
 void SimpleJsonDB::startFlushTimer()
 {
-    qDebug() << "startFlushTimer: starting timer...";
+    qDebug() << "start flush timer thread:" << QThread::currentThread();
     flushTimer.start(maxFlushDelay);
 }
 
@@ -212,6 +212,9 @@ void SimpleJsonDB::queueFlush()
         if (!this->thread()->isRunning()) {
             qFatal("flush thread is not running??");
         }
+
+        qDebug() << "queue flush signal thread:" << QThread::currentThread();
+        qDebug() << "queue flush slot thread:" << this->thread();
 
         emit signalFlushTimer();
     }
