@@ -34,7 +34,7 @@ class SimpleJsonDB: public QObject
     Q_OBJECT
 
 public:
-    SimpleJsonDB(const QString vpath, const QString path = ":memory:", int maxFlushDelayMillis = 3000);
+    SimpleJsonDB(const QString vpath, const QString path, bool createEmpty, int maxFlushDelayMillis);
     ~SimpleJsonDB();
 
     void readFromDisk();

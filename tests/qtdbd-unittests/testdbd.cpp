@@ -826,7 +826,6 @@ void TestDBD::testDb2WriteRmDomstore()
     QCOMPARE(QFile::exists(dbFilePath), false);
 }
 
-
 void TestDBD::testDb3WriteBaseDb()
 {
     QString testSrcDir = QString("tests") + QDir::separator() + QString("db-3");
@@ -868,7 +867,6 @@ void TestDBD::testDb3WriteBaseDb()
     filestr = fileval->toJson(QMJsonFormat_Optimized, QMJsonSort_CaseSensitive);
     QCOMPARE(filestr, dumpstr);
 }
-
 
 void TestDBD::testDb3WriteDbQueuedFlush()
 {
@@ -912,6 +910,55 @@ void TestDBD::testDb3WriteDbQueuedFlush()
     QCOMPARE(fileval.isNull(), false);
     filestr = fileval->toJson(QMJsonFormat_Optimized, QMJsonSort_CaseSensitive);
     QCOMPARE(filestr, dumpstr);
+}
+
+void TestDBD::testDb2WriteRmThenInjectDomstore()
+{
+    QString testSrcDir = QString("tests") + QDir::separator() + QString("db-2");
+    QString testDstDir = prepTestDB(testSrcDir);
+
+    qDebug() << "testing database copied to: " << testDstDir;
+
+    DBTree dbTree(testDstDir, 1);
+    Db db(&dbTree, false);
+    new DbInterfaceAdaptor(&db);
+
+    QCOMPARE(db.exists(""), true);
+
+    db.write("/dom-store/00000000-0000-0000-0000-000000000002/somekey", "somevalue");
+    QCOMPARE(db.exists("/dom-store/00000000-0000-0000-0000-000000000002/somekey"), true);
+    QCOMPARE(db.exists("dom-store/00000000-0000-0000-0000-000000000002/somekey"), true);
+
+    auto dumpval = QMJsonValue::fromJson(db.dump("/dom-store/00000000-0000-0000-0000-000000000002"));
+    auto dumpstr = dumpval->toJson(QMJsonFormat_Optimized, QMJsonSort_CaseSensitive);
+
+    QCOMPARE(QString("{\"somekey\":\"somevalue\"}"), dumpstr);
+    QCOMPARE(dumpval->toObject()->value("somekey")->toString(), QString("somevalue"));
+
+    QTest::qWait(500);
+    QString dbFilePath(testDstDir + QDir::separator() + "dom-store" + QDir::separator() + "00000000-0000-0000-0000-000000000002.db");
+
+    auto fileval = QMJsonValue::fromJsonFile(dbFilePath);
+    QCOMPARE(fileval.isNull(), false);
+    auto filestr = fileval->toJson(QMJsonFormat_Optimized, QMJsonSort_CaseSensitive);
+    QCOMPARE(filestr, dumpstr);
+
+    QCOMPARE(db.exists("dom-store/00000000-0000-0000-0000-000000000002/somekey"), true);
+    QCOMPARE(db.exists("dom-store/00000000-0000-0000-0000-000000000002"), true);
+
+    // remove domstore
+    db.rm("/dom-store/00000000-0000-0000-0000-000000000002");
+
+    QCOMPARE(db.exists("dom-store/00000000-0000-0000-0000-000000000002/somekey"), false);
+    QCOMPARE(db.exists("dom-store/00000000-0000-0000-0000-000000000002"), false);
+
+    // do inject, all we should now have in the domstore is what we injected
+    // this basically validates that the db doesn't reuse the db file that still exists
+    // due to pending flush
+    db.inject("/dom-store/00000000-0000-0000-0000-000000000002", "{\"x\":1}");
+    dumpval = QMJsonValue::fromJson(db.dump("/dom-store/00000000-0000-0000-0000-000000000002"));
+    dumpstr = dumpval->toJson(QMJsonFormat_Optimized, QMJsonSort_CaseSensitive);
+    QCOMPARE(QString("{\"x\":1}"), dumpstr);
 }
 
 QTEST_MAIN(TestDBD)

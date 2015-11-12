@@ -24,7 +24,7 @@
 #include <QtDebug>
 #include <qmjson.h>
 
-SimpleJsonDB::SimpleJsonDB(const QString vpath, const QString path, int maxFlushDelayMillis) : db(), vpath(vpath), path(path), writeLock(), flushTimer(this), maxFlushDelay(maxFlushDelayMillis), skipDisk(false), filterVmAndDomstoreKeys(false)
+SimpleJsonDB::SimpleJsonDB(const QString vpath, const QString path, bool createEmpty, int maxFlushDelayMillis) : db(), vpath(vpath), path(path), writeLock(), flushTimer(this), maxFlushDelay(maxFlushDelayMillis), skipDisk(false), filterVmAndDomstoreKeys(false)
 {
     flushTimer.setSingleShot(true);
 
@@ -40,8 +40,13 @@ SimpleJsonDB::SimpleJsonDB(const QString vpath, const QString path, int maxFlush
         qFatal("failed to connect signalFlushTimer() to startFlushTimer()");
     }
 
-    // read in db from disk
-    readFromDisk();
+    // read in db from disk if not createEmpty
+    if (createEmpty) {
+        auto obj = QMPointer<QMJsonObject>(new QMJsonObject());
+        db = QMPointer<QMJsonValue>(new QMJsonValue(obj));
+    } else {
+        readFromDisk();
+    }
 
     qDebug() << db;
 }

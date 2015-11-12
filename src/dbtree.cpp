@@ -29,7 +29,6 @@ DBTree::DBTree(QString dbPath, int maxFlushDelayMillis) : dbRoot(), dbPath(dbPat
 {
     qDebug() << "DBTree init(" << dbPath << "," << maxFlushDelay << ")";
     flushThread = new QThread();
-
     qDebug() << "main db tree thread:" << QThread::currentThread();
     qDebug() << "created flush thread:" << flushThread;
 
@@ -47,7 +46,7 @@ DBTree::~DBTree()
     flushThread->deleteLater();
 }
 
-QSharedPointer<SimpleJsonDB> DBTree::createChildDb(const QString parentPath, const QString topLevel, const QString secondLevel, QHash<QString, QSharedPointer<SimpleJsonDB>> &dbs)
+QSharedPointer<SimpleJsonDB> DBTree::createChildDb(const QString parentPath, const QString topLevel, const QString secondLevel, bool createEmpty, QHash<QString, QSharedPointer<SimpleJsonDB>> &dbs)
 {
     QString path = parentPath + QDir::separator() + secondLevel + ".db";
     QString vPath = topLevel + "/" + secondLevel;
@@ -56,7 +55,7 @@ QSharedPointer<SimpleJsonDB> DBTree::createChildDb(const QString parentPath, con
 
     qDebug() << "creating db in:" << topLevel << " for uuid:" << secondLevel << "at path:" << path;
 
-    auto db = QSharedPointer<SimpleJsonDB>(new SimpleJsonDB(vPath, path, maxFlushDelay));
+    auto db = QSharedPointer<SimpleJsonDB>(new SimpleJsonDB(vPath, path, createEmpty, maxFlushDelay));
     db->moveToThread(flushThread);
     mainDb->acquireWriteLock();
     dbs.insert(secondLevel, db);
@@ -98,7 +97,7 @@ void DBTree::loadChildren(const QString path, const QString key, QHash<QString, 
         }
 
         QString uuid = fileName.remove(36, 3);
-        createChildDb(path, key, uuid, dbs);
+        createChildDb(path, key, uuid, false, dbs);
     }
 }
 
@@ -106,7 +105,7 @@ void DBTree::loadTree()
 {
     if (dbPath == ":memory:")
     {
-        mainDb = QSharedPointer<SimpleJsonDB>(new SimpleJsonDB(QString(""), QString(":memory:"), maxFlushDelay));
+        mainDb = QSharedPointer<SimpleJsonDB>(new SimpleJsonDB(QString(""), QString(":memory:"), true, maxFlushDelay));
         mainDb->moveToThread(flushThread);
         mainDb->setFilterVmAndDomstoreKeys(true);
         dbRoot = mainDb->getValue();
@@ -114,7 +113,7 @@ void DBTree::loadTree()
     else
     {
         QString topDbPath = dbPath + QDir::separator() + "db";
-        mainDb = QSharedPointer<SimpleJsonDB>(new SimpleJsonDB(QString(""), topDbPath, maxFlushDelay));
+        mainDb = QSharedPointer<SimpleJsonDB>(new SimpleJsonDB(QString(""), topDbPath, false, maxFlushDelay));
         mainDb->moveToThread(flushThread);
         mainDb->setFilterVmAndDomstoreKeys(true);
         dbRoot = mainDb->getValue();
@@ -150,7 +149,7 @@ QSharedPointer<SimpleJsonDB> DBTree::lookupDb(const QStringList &splitPath, bool
 
         if (createEmpty)
         {
-            return createChildDb(dbPath + QDir::separator() + "dom-store", topLevel, secondLevel, domstoreDbs);
+            return createChildDb(dbPath + QDir::separator() + "dom-store", topLevel, secondLevel, true, domstoreDbs);
         }
         else
         {
@@ -169,7 +168,7 @@ QSharedPointer<SimpleJsonDB> DBTree::lookupDb(const QStringList &splitPath, bool
 
         if (createEmpty)
         {
-            return createChildDb(dbPath + QDir::separator() + "vms", topLevel, secondLevel, vmsDbs);
+            return createChildDb(dbPath + QDir::separator() + "vms", topLevel, secondLevel, true, vmsDbs);
         }
         else
         {

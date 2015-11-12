@@ -34,7 +34,7 @@ public:
     DBTree(const QString dbPath = ":memory:", int maxFlushDelayMillis = 3000);
     ~DBTree();
 
-    QSharedPointer<SimpleJsonDB> createChildDb(const QString parentPath, const QString topLevel, const QString secondLevel, QHash<QString, QSharedPointer<SimpleJsonDB>> &dbs);
+    QSharedPointer<SimpleJsonDB> createChildDb(const QString parentPath, const QString topLevel, const QString secondLevel, bool createEmpty, QHash<QString, QSharedPointer<SimpleJsonDB>> &dbs);
     void loadChildren(const QString path, const QString key, QHash<QString, QSharedPointer<SimpleJsonDB>> &dbs);
     void loadTree();
     QSharedPointer<SimpleJsonDB> lookupDb(const QStringList &splitPath, bool createEmpty);
