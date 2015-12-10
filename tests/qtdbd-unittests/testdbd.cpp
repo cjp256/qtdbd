@@ -961,4 +961,24 @@ void TestDBD::testDb2WriteRmThenInjectDomstore()
     QCOMPARE(QString("{\"x\":1}"), dumpstr);
 }
 
+void TestDBD::testDb3WriteDbWriteThenRm()
+{
+    QString testSrcDir = QString("tests") + QDir::separator() + QString("db-3");
+    QString testDstDir = prepTestDB(testSrcDir);
+
+    qDebug() << "testing database copied to: " << testDstDir;
+
+    DBTree dbTree(testDstDir, 1000);
+    Db db(&dbTree, false);
+    DbInterfaceAdaptor dia(&db);
+
+    QCOMPARE(db.exists(""), true);
+
+    for (int i = 0; i < 1000; i++)
+    {
+        db.write("/dom-store/00000000-0000-0000-0000-000000000002/somekey", "somevalue");
+        db.rm("/dom-store/00000000-0000-0000-0000-000000000002");
+    }
+}
+
 QTEST_MAIN(TestDBD)

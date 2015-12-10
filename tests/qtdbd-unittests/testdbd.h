@@ -50,6 +50,7 @@ private slots:
     void testDb3WriteBaseDb();
     void testDb3WriteDbQueuedFlush();
     void testDb2WriteRmThenInjectDomstore();
+    void testDb3WriteDbWriteThenRm();
 };
 
 #endif // TESTDBD_H
