@@ -359,6 +359,52 @@ void TestDBD::testDbBasicList()
     QCOMPARE(db.list("/x/d"), QStringList());
 }
 
+void TestDBD::testDbBasicListSortStrings()
+{
+    DBTree dbTree(":memory:", 0);
+    Db db(&dbTree, false);
+    new DbInterfaceAdaptor(&db);
+
+    QCOMPARE(db.list("/"), QStringList());
+    QCOMPARE(db.list(""), QStringList());
+
+    db.write("/b", "somevalue");
+    db.write("/a", "somevalue");
+    db.write("/d", "somevalue");
+    db.write("/c", "somevalue");
+
+    QStringList results = db.list("/");
+    results.sort();
+
+    QStringList expected;
+    expected << "a" << "b" << "c" << "d";
+    QCOMPARE(results, expected);
+}
+
+void TestDBD::testDbBasicListSortIntegerStrings()
+{
+    DBTree dbTree(":memory:", 0);
+    Db db(&dbTree, false);
+    new DbInterfaceAdaptor(&db);
+
+    QCOMPARE(db.list("/"), QStringList());
+    QCOMPARE(db.list(""), QStringList());
+
+    db.write("/2", "somevalue");
+    db.write("/0", "somevalue");
+    db.write("/19", "somevalue");
+    db.write("/5", "somevalue");
+    db.write("/120", "somevalue");
+    db.write("/4", "somevalue");
+    db.write("/10", "somevalue");
+
+    QStringList results = db.list("/");
+
+    QStringList expected;
+    expected << "0" << "2" << "4" << "5" << "10" << "19" << "120";
+    QCOMPARE(results, expected);
+}
+
 void TestDBD::testDbBasicRm()
 {
     DBTree dbTree(":memory:", 0);

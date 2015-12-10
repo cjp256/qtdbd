@@ -40,6 +40,8 @@ private slots:
     void testDbBasicDump();
     void testDbBasicExists();
     void testDbBasicList();
+    void testDbBasicListSortStrings();
+    void testDbBasicListSortIntegerStrings();
     void testDbBasicRm();
     void testDbBasicInject();
     void testDb2Inject();

@@ -242,7 +242,37 @@ QStringList Db::list(const QString &path)
         return QStringList();
     }
 
-    return value->toObject()->keys();
+    QStringList retList = value->toObject()->keys();
+
+    // XXX COMPATIBILITY HACK:
+    // the old dbd returned sorted lists sorted numerically when a list of numbers
+    // for lulz, we'll also sort non-integer lists as well, but do not rely on these
+    // behaviors as the user should be expected to sort it themselves (however they see fit)
+    bool listIsIntegers = true;
+    foreach (const QString &str, retList)
+    {
+        str.toInt(&listIsIntegers);
+        if (!listIsIntegers)
+        {
+            break;
+        }
+    }
+
+    if (listIsIntegers)
+    {
+        struct CompareIntegerStrings
+        {
+            static bool lt(const QString & s0, const QString & s1) { return(s0.toInt() < s1.toInt()); }
+        };
+
+        qSort(retList.begin(), retList.end(), CompareIntegerStrings::lt);
+    }
+    else
+    {
+        retList.sort();
+    }
+
+    return retList;
 }
 
 QString Db::read(const QString &path)
