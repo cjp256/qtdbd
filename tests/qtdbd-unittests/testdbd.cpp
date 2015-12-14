@@ -974,10 +974,32 @@ void TestDBD::testDb3WriteDbWriteThenRm()
 
     QCOMPARE(db.exists(""), true);
 
-    for (int i = 0; i < 1000; i++)
+    for (int i = 0; i < 32; i++)
     {
-        db.write("/dom-store/00000000-0000-0000-0000-000000000002/somekey", "somevalue");
-        db.rm("/dom-store/00000000-0000-0000-0000-000000000002");
+        QString uuid;
+        uuid.sprintf("00000000-0000-0000-0000-00000000%04d", i);
+        db.write("/dom-store/" + uuid + "/somekey", "somevalue");
+        db.rm("/dom-store/" + uuid);
+    }
+}
+
+void TestDBD::testDb3WriteDbWriteThenRmRepeatedly()
+{
+    QString testSrcDir = QString("tests") + QDir::separator() + QString("db-3");
+    QString testDstDir = prepTestDB(testSrcDir);
+
+    qDebug() << "testing database copied to: " << testDstDir;
+
+    DBTree dbTree(testDstDir, 1000);
+    Db db(&dbTree, false);
+    DbInterfaceAdaptor dia(&db);
+
+    QCOMPARE(db.exists(""), true);
+
+    for (int i = 0; i < 32; i++)
+    {
+        db.write("/dom-store/00000000-0000-0000-0000-000000001234/somekey", "somevalue");
+        db.rm("/dom-store/00000000-0000-0000-0000-000000001234");
     }
 }
 

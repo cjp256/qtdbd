@@ -42,7 +42,6 @@ public:
     void releaseWriteLock();
     void setFilterVmAndDomstoreKeys(bool filter);
     void setMaxFlushDelay(int maxFlushDelayMillis);
-    void forcePendingFlush();
 
     QString jsonString();
     QMPointer<QMJsonValue> getValue();
@@ -52,6 +51,7 @@ public slots:
     void startFlushTimer();
     void queueFlush();
     void flush();
+    void forcePendingFlush();
 
 Q_SIGNALS:
     void signalFlushTimer();

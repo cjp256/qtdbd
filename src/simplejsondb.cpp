@@ -168,6 +168,9 @@ void SimpleJsonDB::flush()
         return;
     }
 
+    // stop pending timers
+    flushTimer.stop();
+
     QString dbString = jsonString();
 
     if (dbString == "{}")
@@ -232,7 +235,6 @@ void SimpleJsonDB::forcePendingFlush()
     if (flushTimer.isActive())
     {
         qDebug() << "force active pending flush for db:" << path;
-        flushTimer.stop();
         flush();
     }
 }

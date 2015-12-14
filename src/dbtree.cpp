@@ -347,13 +347,15 @@ void DBTree::rmValue(const QStringList &splitPath)
     // unlink db if required, forcing immediate flush
     if (parentList.length() == 1 && parentList.at(0) == "vm")
     {
-        db->flush();
+        // force flush (which will stop pending timers), then remove
+        QMetaObject::invokeMethod(db.data(), "flush", Qt::BlockingQueuedConnection);
         vmsDbs.remove(key);
 
     }
     else if (parentList.length() == 1 && parentList.at(0) == "dom-store")
     {
-        db->flush();
+        // force flush (which will stop pending timers), then remove
+        QMetaObject::invokeMethod(db.data(), "flush", Qt::BlockingQueuedConnection);
         domstoreDbs.remove(key);
     }
     else
@@ -421,16 +423,16 @@ void DBTree::exitCleanup()
 {
     qDebug() << "exiting...";
 
-    mainDb->forcePendingFlush();
+    QMetaObject::invokeMethod(mainDb.data(), "forcePendingFlush", Qt::BlockingQueuedConnection);
 
     for (auto db : vmsDbs)
     {
-        db->forcePendingFlush();
+        QMetaObject::invokeMethod(db.data(), "forcePendingFlush", Qt::BlockingQueuedConnection);
     }
 
     for (auto db : domstoreDbs)
     {
-        db->forcePendingFlush();
+        QMetaObject::invokeMethod(db.data(), "forcePendingFlush", Qt::BlockingQueuedConnection);
     }
 
     qDebug() << "buh bye";
