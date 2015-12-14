@@ -348,14 +348,20 @@ void DBTree::rmValue(const QStringList &splitPath)
     if (parentList.length() == 1 && parentList.at(0) == "vm")
     {
         // force flush (which will stop pending timers), then remove
-        QMetaObject::invokeMethod(db.data(), "flush", Qt::BlockingQueuedConnection);
+        if (!QMetaObject::invokeMethod(db.data(), "flush", Qt::BlockingQueuedConnection))
+        {
+            qWarning("failed to invokeMethod db->flush()");
+        }
         vmsDbs.remove(key);
 
     }
     else if (parentList.length() == 1 && parentList.at(0) == "dom-store")
     {
         // force flush (which will stop pending timers), then remove
-        QMetaObject::invokeMethod(db.data(), "flush", Qt::BlockingQueuedConnection);
+        if (!QMetaObject::invokeMethod(db.data(), "flush", Qt::BlockingQueuedConnection))
+        {
+            qWarning("failed to invokeMethod db->flush()");
+        }
         domstoreDbs.remove(key);
     }
     else
@@ -423,16 +429,25 @@ void DBTree::exitCleanup()
 {
     qDebug() << "exiting...";
 
-    QMetaObject::invokeMethod(mainDb.data(), "forcePendingFlush", Qt::BlockingQueuedConnection);
+    if (!QMetaObject::invokeMethod(mainDb.data(), "forcePendingFlush", Qt::BlockingQueuedConnection))
+    {
+        qWarning("failed to invokeMethod mainDb->forcePendingFlush()");
+    }
 
     for (auto db : vmsDbs)
     {
-        QMetaObject::invokeMethod(db.data(), "forcePendingFlush", Qt::BlockingQueuedConnection);
+        if (!QMetaObject::invokeMethod(db.data(), "forcePendingFlush", Qt::BlockingQueuedConnection))
+        {
+            qWarning("failed to invokeMethod db->forcePendingFlush()");
+        }
     }
 
     for (auto db : domstoreDbs)
     {
-        QMetaObject::invokeMethod(db.data(), "forcePendingFlush", Qt::BlockingQueuedConnection);
+        if (!QMetaObject::invokeMethod(db.data(), "forcePendingFlush", Qt::BlockingQueuedConnection))
+        {
+            qWarning("failed to invokeMethod db->forcePendingFlush()");
+        }
     }
 
     qDebug() << "buh bye";
