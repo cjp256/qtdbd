@@ -30,6 +30,8 @@
 #include "comcitrixxenclientdbinterface.h"
 #include "dbdlogging.h"
 
+#include "backtrace.h"
+
 typedef struct
 {
     bool debuggingEnabled;
@@ -43,11 +45,11 @@ typedef struct
 
 static CmdLineOptions g_cmdLineOptions;
 
-void exitHandler(int signal)
-{
-    qDebug() << "signal to quit received:" << signal;
-    QCoreApplication::quit();
-}
+// void exitHandler(int signal)
+// {
+//     qDebug() << "signal to quit received:" << signal;
+//     QCoreApplication::quit();
+// }
 
 void parseCommandLine(QCommandLineParser &parser, QCoreApplication &app, CmdLineOptions *opts)
 {
@@ -134,10 +136,14 @@ int main(int argc, char *argv[])
     QDBusConnection bus = QDBusConnection::sessionBus();
 
     // setup exit handler
-    signal(SIGQUIT, exitHandler);
-    signal(SIGINT, exitHandler);
-    signal(SIGTERM, exitHandler);
-    signal(SIGHUP, exitHandler);
+    if (setup_unix_signal_handlers())
+    {
+        exit(EXIT_SETUP_FAILURE);
+    }
+    // signal(SIGQUIT, exitHandler);
+    // signal(SIGINT, exitHandler);
+    // signal(SIGTERM, exitHandler);
+    // signal(SIGHUP, exitHandler);
 
     parseCommandLine(parser, app, &g_cmdLineOptions);
 
