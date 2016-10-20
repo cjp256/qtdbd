@@ -153,13 +153,13 @@ int main(int argc, char *argv[])
 
     if (!bus.isConnected())
     {
-        qFatal("failed to connect to dbus");
+        qCritical("failed to connect to dbus");
         exit(1);
     }
 
     if (!bus.registerService("com.citrix.xenclient.db"))
     {
-        qFatal("failed to register service");
+        qCritical("failed to register service");
         exit(2);
     }
 

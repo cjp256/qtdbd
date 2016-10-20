@@ -136,7 +136,7 @@ int main(int argc, char *argv[])
 
     if (!QDBusConnection::systemBus().isConnected())
     {
-        qFatal("failed to connect to dbus");
+        qCritical("failed to connect to dbus");
         exit(1);
     }
 
@@ -149,7 +149,7 @@ int main(int argc, char *argv[])
     // if it's valid, print it
     if (!reply.isValid())
     {
-        qFatal("dbus not responding!");
+        qCritical("dbus not responding!");
         exit(1);
     }
 
@@ -159,7 +159,7 @@ int main(int argc, char *argv[])
 
     if (value.isNull())
     {
-        qFatal("received invalid json value!");
+        qCritical("received invalid json value!");
         exit(1);
     }
 

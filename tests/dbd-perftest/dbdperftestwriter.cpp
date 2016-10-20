@@ -30,7 +30,7 @@ void DbdPerfTestWriter::setup()
 {
     if (!QDBusConnection::systemBus().isConnected())
     {
-        qFatal("failed to connect to dbus");
+        qCritical("failed to connect to dbus");
         exit(1);
     }
 

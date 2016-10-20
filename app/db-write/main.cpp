@@ -63,7 +63,7 @@ void parseCommandLine(QCoreApplication &app, CmdLineOptions *opts)
 
     if (posArgs.size() < 2)
     {
-        qFatal("invalid arguments");
+        qCritical("invalid arguments");
         exit(1);
     }
 
@@ -89,7 +89,7 @@ int main(int argc, char *argv[])
 
     if (!QDBusConnection::systemBus().isConnected())
     {
-        qFatal("failed to connect to dbus");
+        qCritical("failed to connect to dbus");
         exit(1);
     }
 
@@ -102,7 +102,7 @@ int main(int argc, char *argv[])
     // if it's valid, print it
     if (!reply.isValid())
     {
-        qFatal("dbus not responding!");
+        qCritical("dbus not responding!");
         exit(1);
     }
 
