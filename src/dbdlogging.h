@@ -79,7 +79,7 @@ public:
                 {
                     fprintf(stderr, "[FATAL] %s\n", qPrintable(msg));
                 }
-                abort();
+                break;
         }
     }
 

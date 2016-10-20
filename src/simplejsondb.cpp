@@ -31,13 +31,13 @@ SimpleJsonDB::SimpleJsonDB(const QString vpath, const QString path, bool createE
     // connect timer up to flush function
     if (!QObject::connect(&flushTimer, &QTimer::timeout, this, &SimpleJsonDB::flush))
     {
-        qFatal("failed to connect timeout() to flush()");
+        qCritical("failed to connect timeout() to flush()");
     }
 
     // inter-thread signal so main thread can trigger the timer start
     if (!QObject::connect(this, &SimpleJsonDB::signalFlushTimer, this, &SimpleJsonDB::startFlushTimer))
     {
-        qFatal("failed to connect signalFlushTimer() to startFlushTimer()");
+        qCritical("failed to connect signalFlushTimer() to startFlushTimer()");
     }
 
     // read in db from disk if not createEmpty
@@ -82,13 +82,13 @@ QString SimpleJsonDB::jsonString()
 
         if (filteredValue.isNull())
         {
-            qFatal("unable to convert db string to qmjsonvalue!");
+            qCritical("unable to convert db string to qmjsonvalue!");
             exit(1);
         }
 
         if (!filteredValue->isObject())
         {
-            qFatal("db qmjsonvalue is not an object!");
+            qCritical("db qmjsonvalue is not an object!");
             exit(1);
         }
 
@@ -216,11 +216,11 @@ void SimpleJsonDB::queueFlush()
         qDebug() << "queue flush for db:" << path << "millis:" << maxFlushDelay;
 
         if (this->thread()->isFinished()) {
-            qFatal("flush thread is finished??");
+            qCritical("flush thread is finished??");
         }
 
         if (!this->thread()->isRunning()) {
-            qFatal("flush thread is not running??");
+            qCritical("flush thread is not running??");
         }
 
         qDebug() << "queue flush signal thread:" << QThread::currentThread();
