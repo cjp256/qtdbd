@@ -508,6 +508,125 @@ void TestDBD::testDbBasicInject()
     QCOMPARE(dumpval->toObject()->value("config")->toObject()->value("pae")->toString(), QString("false"));
 }
 
+void TestDBD::testDbBasicArrayInject()
+{
+    DBTree dbTree(":memory:", 0);
+    Db db(&dbTree, false);
+    new DbInterfaceAdaptor(&db);
+
+    QCOMPARE(db.exists(""), true);
+
+    QString serviceNdvm = QString("{ \
+        \"uuid\": \"00000000-0000-0000-0000-000000000003\", \
+        \"type\": \"ndvm\", \
+        \"name\": \"Network2\", \
+        \"slot\": \"-1\", \
+        \"hidden\": \"false\", \
+        \"start_on_boot\": \"true\", \
+        \"start_on_boot_priority\": \"10\", \
+        \"provides-network-backend\": \"true\", \
+        \"provides-default-network-backend\": \"true\", \
+        \"shutdown-priority\": \"-15\", \
+        \"hidden-in-ui\": \"false\", \
+        \"measured\": \"false\", \
+        \"s3-mode\": \"restart\", \
+        \"domstore-read-access\": \"true\", \
+        \"domstore-write-access\": \"true\", \
+        \"image_path\": \"plugins/serviceimages/citrix.png\", \
+        \"icbinn-path\": \"\\/config\\/certs\\/Network\", \
+        \"boot-sentinel\": \"booted\", \
+        \"v4v-firewall-rules\": [ \
+          \"myself -> 0:5555\", \
+          \"0 -> myself:2222\", \
+          \"myself -> 0:2222\", \
+          \"myself:5555 -> 0\", \
+          \"myself -> 0:4878\" \
+        ], \
+        \"rpc-firewall-rules\": [ \
+            \"allow destination org.freedesktop.DBus interface org.freedesktop.DBus\", \
+            \"allow destination com.citrix.xenclient.xenmgr interface org.freedesktop.DBus.Properties member Get\", \
+            \"allow destination com.citrix.xenclient.networkdaemon\" \
+        ], \
+        \"policies\": { \
+          \"audio-access\": \"false\", \
+          \"audio-rec\": \"false\", \
+          \"cd-access\": \"false\", \
+          \"cd-rec\": \"false\", \
+          \"modify-vm-settings\": \"false\" \
+        }, \
+        \"config\": { \
+          \"notify\": \"dbus\", \
+          \"debug\": \"true\", \
+          \"pae\": \"true\", \
+          \"acpi\": \"true\", \
+          \"hvm\": \"false\", \
+          \"apic\": \"true\", \
+          \"nx\": \"true\", \
+          \"v4v\": \"true\", \
+          \"memory\": \"176\", \
+          \"display\": \"none\", \
+          \"cmdline\": \"root=\\/dev\\/xvda1 iommu=soft xencons=hvc0\", \
+          \"kernel-extract\": \"\\/boot\\/vmlinuz\", \
+          \"flask-label\": \"system_u:system_r:ndvm_t\", \
+          \"pci\": { \
+            \"0\": { \
+              \"class\": \"0x0200\", \
+              \"force-slot\": \"false\" \
+            }, \
+            \"1\": { \
+              \"class\": \"0x0280\", \
+              \"force-slot\": \"false\" \
+            } \
+          }, \
+          \"disk\": { \
+            \"0\": { \
+              \"path\": \"\\/storage\\/ndvm\\/ndvm.vhd\", \
+              \"type\": \"vhd\", \
+              \"mode\": \"r\", \
+              \"shared\": \"true\", \
+              \"device\": \"xvda1\", \
+              \"devtype\": \"disk\" \
+            }, \
+            \"1\": { \
+              \"path\": \"\\/storage\\/ndvm\\/ndvm-swap.vhd\", \
+              \"type\": \"vhd\", \
+              \"mode\": \"w\", \
+              \"device\": \"xvda2\", \
+              \"devtype\": \"disk\" \
+            } \
+          }, \
+          \"qemu-dm-path\": \"\" \
+        } \
+      } \
+    ");
+
+    auto val = QMJsonValue::fromJson(serviceNdvm);
+    auto str = val->toJson(QMJsonFormat_Optimized, QMJsonSort_CaseSensitive);
+    db.inject("/vm/somendvm2", serviceNdvm);
+
+    auto dumpval = QMJsonValue::fromJson(db.dump("/vm/somendvm2"));
+    auto dumpstr = dumpval->toJson(QMJsonFormat_Optimized, QMJsonSort_CaseSensitive);
+
+    QCOMPARE(str, dumpstr);
+    QCOMPARE(dumpval->toObject()->value("uuid")->toString(), QString("00000000-0000-0000-0000-000000000003"));
+    QCOMPARE(dumpval->toObject()->value("config")->toObject()->value("pae")->toString(), QString("true"));
+
+    // twiddle some bits
+    val->toObject()->value("uuid")->fromString("12345");
+    val->toObject()->value("config")->toObject()->value("pae")->fromString("false");
+
+    str = val->toJson(QMJsonFormat_Optimized, QMJsonSort_CaseSensitive);
+
+    db.inject("/vm/somendvm2", str);
+
+    dumpval = QMJsonValue::fromJson(db.dump("/vm/somendvm2"));
+    dumpstr = dumpval->toJson(QMJsonFormat_Optimized, QMJsonSort_CaseSensitive);
+
+    QCOMPARE(str, dumpstr);
+    QCOMPARE(dumpval->toObject()->value("uuid")->toString(), QString("12345"));
+    QCOMPARE(dumpval->toObject()->value("config")->toObject()->value("pae")->toString(), QString("false"));
+}
+
 void TestDBD::testDb2Inject()
 {
     QString testSrcDir = QString("tests") + QDir::separator() + QString("db-2");

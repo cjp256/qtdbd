@@ -42,6 +42,7 @@ private slots:
     void testDbBasicList();
     void testDbBasicRm();
     void testDbBasicInject();
+    void testDbBasicArrayInject();
     void testDb2Inject();
     void testDb2WriteVm();
     void testDb2WriteDomstore();
