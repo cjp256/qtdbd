@@ -33,7 +33,7 @@
 typedef struct
 {
     bool debuggingEnabled;
-    bool foregroundEnabled;
+    bool backgroundEnabled;
     bool skipDomidLookupEnabled;
     bool consoleLoggingEnabled;
     bool sessionBusEnabled;
@@ -59,9 +59,9 @@ void parseCommandLine(QCommandLineParser &parser, QCoreApplication &app, CmdLine
                                    QCoreApplication::translate("main", "enable debug/verbose logging"));
     parser.addOption(debugOption);
 
-    QCommandLineOption foregroundOption(QStringList() << "f" << "foreground",
-                                        QCoreApplication::translate("main", "run in foreground - do not fork"));
-    parser.addOption(foregroundOption);
+    QCommandLineOption backgroundOption(QStringList() << "b" << "background",
+                                        QCoreApplication::translate("main", "run in background - fork"));
+    parser.addOption(backgroundOption);
 
     QCommandLineOption skipLookupDomIDOption(QStringList() << "s" << "skip-domid-lookup",
             QCoreApplication::translate("main", "skip looking up sender domid using openxt specific call"));
@@ -88,7 +88,7 @@ void parseCommandLine(QCommandLineParser &parser, QCoreApplication &app, CmdLine
     parser.process(app);
 
     opts->debuggingEnabled = parser.isSet(debugOption);
-    opts->foregroundEnabled = parser.isSet(foregroundOption);
+    opts->backgroundEnabled = parser.isSet(backgroundOption);
     opts->skipDomidLookupEnabled = parser.isSet(skipLookupDomIDOption);
     opts->consoleLoggingEnabled = parser.isSet(consoleLogOption);
     opts->sessionBusEnabled = parser.isSet(sessionBusOption);
@@ -115,7 +115,7 @@ void parseCommandLine(QCommandLineParser &parser, QCoreApplication &app, CmdLine
     DbdLogging::logger()->debugMode =  opts->debuggingEnabled;
 
     qDebug() << "debugging enabled:" << opts->debuggingEnabled;
-    qDebug() << "foreground enabled:" << opts->foregroundEnabled;
+    qDebug() << "background enabled:" << opts->backgroundEnabled;
     qDebug() << "skip domid lookup enabled:" << opts->skipDomidLookupEnabled;
     qDebug() << "console logging enabled:" << opts->consoleLoggingEnabled;
     qDebug() << "session bus enabled:" << opts->sessionBusEnabled;
@@ -125,6 +125,7 @@ void parseCommandLine(QCommandLineParser &parser, QCoreApplication &app, CmdLine
 
 int main(int argc, char *argv[])
 {
+    QTextCodec::setCodecForLocale(QTextCodec::codecForName("UTF-8"));
     qInstallMessageHandler(DbdLogging::logOutput);
 
     QCoreApplication app(argc, argv);
@@ -141,7 +142,7 @@ int main(int argc, char *argv[])
 
     parseCommandLine(parser, app, &g_cmdLineOptions);
 
-    if (!g_cmdLineOptions.foregroundEnabled)
+    if (g_cmdLineOptions.backgroundEnabled)
     {
         daemon(1, 0);
     }

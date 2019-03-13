@@ -61,20 +61,14 @@ int Db::getSenderDomId()
     }
 
     QDBusInterface iface("org.freedesktop.DBus", "/org/freedesktop/DBus", "org.freedesktop.DBus", QDBusConnection::systemBus());
-    if (iface.isValid())
+    QDBusPendingReply<int> reply = iface.asyncCall("GetConnectionDOMID", senderId);
+    reply.waitForFinished();
+    if (reply.isValid())
     {
-        QDBusPendingReply<int> reply = iface.asyncCall("GetConnectionDOMID", senderId);
-        reply.waitForFinished();
-        if (reply.isValid())
-        {
-            return reply.value();
-        }
-
-        qWarning() << "failed to read sender domid for sender id:" << senderId << "error:" << reply.error().name();
-        return -1;
+        return reply.value();
     }
 
-    qWarning() << "failed to get valid dbus interface:" << iface.lastError().name();
+    qWarning() << "failed to read sender domid for sender id:" << senderId << ", error:" << reply.error().name() << ", interface:" << iface.lastError().name();
     return -1;
 }
 
