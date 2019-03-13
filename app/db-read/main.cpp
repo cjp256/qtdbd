@@ -71,6 +71,7 @@ void parseCommandLine(QCoreApplication &app, CmdLineOptions *opts)
 
 int main(int argc, char *argv[])
 {
+    QTextCodec::setCodecForLocale(QTextCodec::codecForName("UTF-8"));
     qInstallMessageHandler(DbdLogging::logOutput);
 
     QCoreApplication app(argc, argv);
